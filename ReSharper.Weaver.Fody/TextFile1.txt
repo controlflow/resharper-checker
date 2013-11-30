@@ -6,3 +6,17 @@ Inherited [NotNull] - how to detect?
 TODO:
 TestDataWithReference
 TestDataNoReference
+
+Declaration-side checks
+Usage-side checks
+
+
+Delegates:
+Declaration-side checks (cool, track method)
+Usage-side checks (find Invoke calls)
+
+
+Extra info about virtual/interface calls (owner type)
+
+
+delegate  NotNullFunc

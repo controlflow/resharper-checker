@@ -19,25 +19,25 @@ namespace ReSharper.Weaver.Fody {
       myAssemblyResolver = assemblyResolver;
     }
 
-    private static bool IsNotNullAttribute([NotNull] TypeReference type) {
-      if (type.Name != NotNullName) return false;
+    private static bool IsNotNullAttribute([NotNull] TypeReference reference) {
+      if (reference.Name != NotNullName) return false;
 
-      if (type.IsValueType)       return false;
-      if (type.IsArray)           return false;
-      if (type.IsGenericInstance) return false;
-      if (type.IsPointer)         return false;
-      if (type.IsNested)          return  false;
-      if (type.IsByReference)     return false;
+      if (reference.IsValueType)       return false;
+      if (reference.IsArray)           return false;
+      if (reference.IsGenericInstance) return false;
+      if (reference.IsPointer)         return false;
+      if (reference.IsNested)          return false;
+      if (reference.IsByReference)     return false;
 
-      var typeDefinition = type.Resolve();
-      if (typeDefinition != null) {
-        if (typeDefinition.HasGenericParameters) return false;
-        if (typeDefinition.IsAbstract)           return false;
-        if (!typeDefinition.IsClass)             return false;
+      var definition = reference.Resolve();
+      if (definition != null) {
+        if (definition.HasGenericParameters) return false;
+        if (definition.IsAbstract)           return false;
+        if (!definition.IsClass)             return false;
 
-        var baseTypeReference = typeDefinition.BaseType;
-        if (baseTypeReference == null)                       return false;
-        if (baseTypeReference.FullName != SysAttributeFqn) return false;
+        var baseReference = definition.BaseType;
+        if (baseReference == null)                     return false;
+        if (baseReference.FullName != SysAttributeFqn) return false;
       }
 
       return true;
@@ -59,12 +59,39 @@ namespace ReSharper.Weaver.Fody {
       return notNullTokens;
     }
 
+    [CanBeNull] private MethodDefinition FindArgumentNullConstructor() {
+      var typeReference = myModuleDefinition.Import(typeof(ArgumentNullException));
+      if (typeReference == null) return null;
+
+      var typeDefinition = typeReference.Resolve();
+      if (typeDefinition == null) return null;
+
+      foreach (var methodDefinition in typeDefinition.Methods) {
+        if (methodDefinition.IsConstructor && methodDefinition.HasParameters) {
+          var parameters = methodDefinition.Parameters;
+          if (parameters.Count == 1 &&
+              parameters[0].ParameterType.FullName == typeof(String).FullName) {
+            return methodDefinition;
+          }
+        }
+      }
+
+      return null;
+    }
+
     public void Execute() {
       var notNullAttributes = FindNotNullAttributes();
       if (notNullAttributes.Count == 0) return;
 
+      var argumentNullConstructor = FindArgumentNullConstructor();
+      if (argumentNullConstructor == null) return;
 
+      var paramNameInstruction = Instruction.Create(OpCodes.Ldstr, "arg");
+      var boooooo = Instruction.Create(OpCodes.Ldstr, "Violation of [NotNull] contract");
 
+      
+
+      //Instruction.Create()
 
 
       // check type refs and type defs
@@ -77,6 +104,7 @@ namespace ReSharper.Weaver.Fody {
       foreach (var typeDefinition in myModuleDefinition.GetTypes()) {
         foreach (var methodDefinition in typeDefinition.Methods) {
           if (methodDefinition.HasBody && !methodDefinition.IsConstructor) {
+
             var methodBody = methodDefinition.Body;
 
             var str = Instruction.Create(OpCodes.Ldstr, "REWRITE LOL");
