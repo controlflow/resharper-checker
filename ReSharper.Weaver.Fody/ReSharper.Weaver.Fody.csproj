@@ -52,7 +52,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="ArgumentNullExceptionUtil.cs" />
+    <Compile Include="NotNullAttributeUtil.cs" />
     <Compile Include="ModuleWeaver.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

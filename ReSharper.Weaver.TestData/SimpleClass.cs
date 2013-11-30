@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 
 namespace ReSharper.Weaver.TestData
 {
-  public class SimpleClass
-  {
-    //[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-    public void Foo()
-    {
-      Console.WriteLine("LOLO");
+  public class SimpleClass {
+    public void Foo([NotNull] string arg) {
+      Console.WriteLine("arg: {0}", arg);
     }
   }
 }

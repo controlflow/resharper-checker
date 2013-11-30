@@ -11,7 +11,7 @@ namespace ReSharper.Weaver.Foo
     static void Main(string[] args)
     {
       var simpleClass = new SimpleClass();
-      simpleClass.Foo();
+      //simpleClass.Foo();
     }
   }
 }
