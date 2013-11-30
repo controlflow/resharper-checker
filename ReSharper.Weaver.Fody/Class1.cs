@@ -3,16 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ReSharper.Weaver.Fody
-{
-    public class Class1
-    {
-      void M()
-      {
-        
-      }
+namespace ReSharper.Weaver.Fody {
+  public class Class1 {
+    private void M() {}
 
-      /*
+    /*
    
    [NotNull] on fields - check at ctor end, maybe in method
    [NotNull] on return value - before .ret
@@ -22,5 +17,5 @@ namespace ReSharper.Weaver.Fody
    [NotNull] on field in ctor
    
    */
-    }
+  }
 }

@@ -6,29 +6,9 @@ namespace ReSharper.Weaver.TestData
 {
   public class SimpleClass
   {
-    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+    //[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
     public void Foo()
     {
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
-      Console.WriteLine("LOLO");
       Console.WriteLine("LOLO");
     }
   }

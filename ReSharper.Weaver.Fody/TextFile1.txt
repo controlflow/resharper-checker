@@ -1,0 +1,8 @@
+﻿
+
+
+Inherited [NotNull] - how to detect?
+
+TODO:
+TestDataWithReference
+TestDataNoReference
