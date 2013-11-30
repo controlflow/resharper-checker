@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Weaver.TestData",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Weaver.Tests", "ReSharper.Weaver.Tests\ReSharper.Weaver.Tests.csproj", "{EE6DB3AE-970E-45CD-8053-BD928A99E49A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Weaver.Foo", "ReSharper.Weaver.Foo\ReSharper.Weaver.Foo.csproj", "{C638B301-2C12-4822-9700-CED81F6F3FBB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{EE6DB3AE-970E-45CD-8053-BD928A99E49A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE6DB3AE-970E-45CD-8053-BD928A99E49A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE6DB3AE-970E-45CD-8053-BD928A99E49A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C638B301-2C12-4822-9700-CED81F6F3FBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C638B301-2C12-4822-9700-CED81F6F3FBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C638B301-2C12-4822-9700-CED81F6F3FBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C638B301-2C12-4822-9700-CED81F6F3FBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

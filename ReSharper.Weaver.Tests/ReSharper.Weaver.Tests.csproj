@@ -35,6 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Mono.Cecil">
       <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -66,13 +67,17 @@
   </Choose>
   <ItemGroup>
     <Compile Include="MockAssemblyResolver.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="IntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ReSharper.Weaver.Fody\ReSharper.Weaver.Fody.csproj">
+      <Project>{0D42B203-63E5-4BCC-A4CE-293104A23CF5}</Project>
+      <Name>ReSharper.Weaver.Fody</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ReSharper.Weaver.TestData\ReSharper.Weaver.TestData.csproj">
       <Project>{4C422215-795E-4536-B7E7-C3ACE4F8CBA4}</Project>
       <Name>ReSharper.Weaver.TestData</Name>
