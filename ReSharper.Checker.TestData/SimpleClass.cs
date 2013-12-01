@@ -28,5 +28,9 @@ namespace JetBrains.ReSharper.Checker.TestData
         GC.KeepAlive(s.Length);
       }
     }
+
+    [NotNull] public string ReturnsNotNull(string input) {
+      return input;
+    }
   }
 }

@@ -81,5 +81,10 @@ namespace JetBrains.ReSharper.Checker.Tests {
       Assert.Throws<NullReferenceException>(() => Instance.ParamsArgument("abc", null));
       Assert.Throws<ArgumentNullException>(() => Instance.ParamsArgument(null));
     }
+
+    [Test] public void ReturnsNotNull() {
+      Assert.DoesNotThrow(() => Instance.ReturnsNotNull("abc"));
+      Assert.Throws<ArgumentNullException>(() => Instance.ReturnsNotNull(null));
+    }
   }
 }

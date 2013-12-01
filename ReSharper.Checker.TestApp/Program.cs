@@ -27,8 +27,18 @@ namespace JetBrains.ReSharper.Checker.TestApp
   }
 
   public static class Program {
-    static void Foo([NotNull] string arg) {
+    [NotNull]
+    static string Foo(string arg) {
       Console.WriteLine(arg);
+
+      if (arg == null || arg.Length > 10) {
+        Console.WriteLine();
+        return null;
+      }
+
+      Console.WriteLine();
+
+      return arg;
     }
 
     static void Main() {
