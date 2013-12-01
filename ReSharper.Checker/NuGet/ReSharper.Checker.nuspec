@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>ReSharper.Checker</id>
+    <id>ReSharper.Checker.Fody</id>
     <version>1.0</version>
-    <title>RReSharper.Checker</title>
+    <title>ReSharper.Checker MSIL weaver</title>
     <authors>Alexander Shvedov</authors>
     <owners>Alexander Shvedov</owners>
     <projectUrl>https://github.com/controlflow/resharper-weaver</projectUrl>
@@ -15,8 +15,8 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\bin\Debug\ReSharper.Checker.dll" target="\" />
-    <file src="..\bin\Debug\ReSharper.Checker.pdb" target="\" />
+    <file src="..\bin\Debug\ReSharper.Checker.Fody.dll" target="\" />
+    <file src="..\bin\Debug\ReSharper.Checker.Fody.pdb" target="\" />
     <file src="*.ps1" target="tools\" />
     <file src="Fody_ToBeDeleted.txt" target="content\" />
   </files>

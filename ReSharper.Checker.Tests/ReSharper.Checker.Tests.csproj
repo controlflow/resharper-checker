@@ -77,9 +77,9 @@
       <Project>{4C422215-795E-4536-B7E7-C3ACE4F8CBA4}</Project>
       <Name>ReSharper.Checker.TestData</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ReSharper.Checker\ReSharper.Checker.csproj">
+    <ProjectReference Include="..\ReSharper.Checker\ReSharper.Checker.Fody.csproj">
       <Project>{0D42B203-63E5-4BCC-A4CE-293104A23CF5}</Project>
-      <Name>ReSharper.Checker</Name>
+      <Name>ReSharper.Checker.Fody</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

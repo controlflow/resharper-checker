@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("ReSharper.Checker")]
+[assembly: AssemblyTitle("ReSharper.Checker.Fody")]
 [assembly: AssemblyDescription("ReSharper.Checker weaver")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Shvedov Alexander")]
