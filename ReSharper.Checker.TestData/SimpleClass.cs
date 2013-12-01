@@ -32,5 +32,15 @@ namespace JetBrains.ReSharper.Checker.TestData
     [NotNull] public string ReturnsNotNull(string input) {
       return input;
     }
+
+    public unsafe void PointersTest(bool @throw) {
+      var value = 42;
+      PointerPassThrough(@throw ? &value : null);
+    }
+
+    [NotNull]
+    private static unsafe int* PointerPassThrough([NotNull] int* ptr) {
+      return ptr;
+    }
   }
 }

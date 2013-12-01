@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using JetBrains.Annotations;
 
 namespace JetBrains.ReSharper.Checker.TestApp
@@ -33,7 +34,7 @@ namespace JetBrains.ReSharper.Checker.TestApp
 
       if (arg == null || arg.Length > 10) {
         Console.WriteLine();
-        return null;
+        return arg;
       }
 
       Console.WriteLine();
@@ -44,6 +45,8 @@ namespace JetBrains.ReSharper.Checker.TestApp
     static void Main() {
       Foo("abc");
       Foo(null);
+
+      //ContractFailureKind
 
       var boo = new Boo(123, "Alex", 42);
 
