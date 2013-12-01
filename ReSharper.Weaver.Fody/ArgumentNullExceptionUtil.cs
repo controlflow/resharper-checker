@@ -22,7 +22,7 @@ namespace ReSharper.Weaver.Fody {
           if (parameters.Count == 2
             && parameters[0].ParameterType.FullName == StringTypeFqn
             && parameters[1].ParameterType.FullName == StringTypeFqn) {
-            return methodDefinition;
+            return module.Import(methodDefinition);
           }
         }
       }
@@ -31,20 +31,16 @@ namespace ReSharper.Weaver.Fody {
     }
 
     [NotNull] public static Instruction[] EmitNullCheckInstruction(
-      int reference, [NotNull] MethodReference constructorReference,
+      ParameterDefinition reference, [NotNull] MethodReference constructorReference,
       [NotNull] Instruction target, [NotNull] string paramName, [NotNull] string message) {
 
-      var loadArgumentInstruction = Instruction.Create(OpCodes.Ldarg, reference);
-      var nullCheckInstruction = Instruction.Create(OpCodes.Brtrue, target); // check what is emitting
-      var loadParamNameInstruction = Instruction.Create(OpCodes.Ldstr, paramName);
-      var loadMessageInstruction = Instruction.Create(OpCodes.Ldstr, message);
-      var createExceptionInstruction = Instruction.Create(OpCodes.Newobj, constructorReference);
-      var throwInstruction = Instruction.Create(OpCodes.Throw);
-
       return new[] {
-        loadArgumentInstruction, nullCheckInstruction,
-        loadParamNameInstruction, loadMessageInstruction,
-        createExceptionInstruction, throwInstruction
+        Instruction.Create(OpCodes.Ldarg, reference),
+        Instruction.Create(OpCodes.Brtrue, target),
+        Instruction.Create(OpCodes.Ldstr, paramName),
+        Instruction.Create(OpCodes.Ldstr, message),
+        Instruction.Create(OpCodes.Newobj, constructorReference),
+        Instruction.Create(OpCodes.Throw)
       };
     }
   }

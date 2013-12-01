@@ -1,15 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
 using Mono.Cecil.Pdb;
+using NUnit.Framework;
 using ReSharper.Weaver.Fody;
 using ReSharper.Weaver.TestData;
 
 namespace ReSharper.Weaver.Tests
 {
-  [TestClass]
+  [TestFixture]
   public sealed class IntegrationTests
   {
     private readonly Assembly myResultingAssembly;
@@ -48,12 +48,13 @@ namespace ReSharper.Weaver.Tests
       myResultingAssembly = Assembly.LoadFile(targetAssemblyPath);
     }
 
-    [TestMethod]
-    public void TestMethod1()
+    [Test] public void SingleValueArgument()
     {
       var type = myResultingAssembly.GetType(typeof(SimpleClass).FullName);
       dynamic instance = Activator.CreateInstance(type);
-      instance.Foo();
+
+      Assert.DoesNotThrow(() => instance.Foo("abc"));
+      Assert.Throws<ArgumentNullException>(() => instance.Foo(null));
     }
   }
 }
