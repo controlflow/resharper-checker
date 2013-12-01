@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>ReSharper.Checker</id>
+    <version>1.0</version>
+    <title>RReSharper.Checker</title>
+    <authors>Alexander Shvedov</authors>
+    <owners>Alexander Shvedov</owners>
+    <projectUrl>https://github.com/controlflow/resharper-weaver</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Weaving tool to materialize R# [NotNull] annotations</description>
+    <tags>tags here</tags>
+    <dependencies>
+      <dependency id="Fody" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\bin\Debug\ReSharper.Checker.dll" target="\" />
+    <file src="..\bin\Debug\ReSharper.Checker.pdb" target="\" />
+    <file src="*.ps1" target="tools\" />
+    <file src="Fody_ToBeDeleted.txt" target="content\" />
+  </files>
+</package>
