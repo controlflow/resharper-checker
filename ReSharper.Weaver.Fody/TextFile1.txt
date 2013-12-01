@@ -10,6 +10,9 @@ TestDataNoReference
 Declaration-side checks
 Usage-side checks
 
+Properties?
+VB properties
+
 
 Delegates:
 Declaration-side checks (cool, track method)

@@ -15,6 +15,9 @@ namespace ReSharper.Weaver.Fody {
       myAssemblyResolver = assemblyResolver;
     }
 
+    //public bool EmitDeclarationSideChecks { get; set; }
+    //public bool EmitUsageSideChecks { get; set; }
+
     public void Execute() {
       var notNullAttributes = NotNullAttributeUtil.FindAttributes(myModuleDefinition);
       if (notNullAttributes.Count == 0) return;
