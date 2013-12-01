@@ -49,7 +49,7 @@ function Update-FodyConfig($addinName, $project)
 
     if (-not $node)
     {
-        Write-Host "Appending node"
+        Write-Host "Appending node '" + $addinName + "'"
         $newNode = $xml.CreateElement($addinName)
         $weavers.AppendChild($newNode)
     }

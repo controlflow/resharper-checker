@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ReSharper.Weaver.Fody</RootNamespace>
-    <AssemblyName>ReSharper.Weaver.Fody</AssemblyName>
+    <AssemblyName>ReSharperWeaver.Fody</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FodyPath>..\packages\Fody.1.18.0.0</FodyPath>

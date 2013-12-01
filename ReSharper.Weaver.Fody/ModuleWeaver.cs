@@ -1,13 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Xml.Linq;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+//namespace ReSharper.Weaver.Fody {
+using ReSharper.Weaver.Fody;
 
-namespace ReSharper.Weaver.Fody {
+[UsedImplicitly]
   public sealed class ModuleWeaver {
     [NotNull] private readonly ModuleDefinition myModuleDefinition;
     [NotNull] private readonly IAssemblyResolver myAssemblyResolver;
+
+    public ModuleDefinition ModuleDefinition { get; set; }
+    public IAssemblyResolver AssemblyResolver { get; set; }
+    public XElement Config { get; set; } // mi mi mi
+
+    [UsedImplicitly] public ModuleWeaver() {
+      // do not delete me
+    }
 
     public ModuleWeaver([NotNull] ModuleDefinition moduleDefinition,
                         [NotNull] IAssemblyResolver assemblyResolver) {
@@ -19,6 +31,8 @@ namespace ReSharper.Weaver.Fody {
     //public bool EmitUsageSideChecks { get; set; }
 
     public void Execute() {
+      Console.WriteLine("DEBUG MAFAKA");
+
       var notNullAttributes = NotNullAttributeUtil.FindAttributes(myModuleDefinition);
       if (notNullAttributes.Count == 0) return;
 
@@ -120,4 +134,4 @@ namespace ReSharper.Weaver.Fody {
       }
     }
   }
-}
+//}
