@@ -16,6 +16,8 @@ namespace ReSharper.Weaver.Tests
 
     public IntegrationTests()
     {
+      // move to assembly fixture
+
       var assembly = typeof(SimpleClass).Assembly;
       var testDataAssemblyPath = MockAssemblyResolver.FindPath(assembly);
 
@@ -48,13 +50,33 @@ namespace ReSharper.Weaver.Tests
       myResultingAssembly = Assembly.LoadFile(targetAssemblyPath);
     }
 
-    [Test] public void SingleValueArgument()
-    {
-      var type = myResultingAssembly.GetType(typeof(SimpleClass).FullName);
-      dynamic instance = Activator.CreateInstance(type);
+    private dynamic Instance {
+      get {
+        var type = myResultingAssembly.GetType(typeof(SimpleClass).FullName);
+        Assert.That(type, Is.Not.Null);
 
-      Assert.DoesNotThrow(() => instance.Foo("abc"));
-      Assert.Throws<ArgumentNullException>(() => instance.Foo(null));
+        return Activator.CreateInstance(type);
+      }
+    }
+
+    [Test] public void SingleArgument()
+    {
+      Assert.DoesNotThrow(() => Instance.SingleArgument("abc"));
+      Assert.Throws<ArgumentNullException>(() => Instance.SingleArgument(null));
+    }
+
+    [Test] public void MultipleArguments()
+    {
+      Assert.DoesNotThrow(() => Instance.MultipleArguments("abc", "def", "ghi"));
+      Assert.DoesNotThrow(() => Instance.MultipleArguments("abc", "def", null));
+      Assert.Throws<ArgumentNullException>(() => Instance.MultipleArguments(null, "def", null));
+      Assert.Throws<ArgumentNullException>(() => Instance.MultipleArguments("abc", null, null));
+    }
+
+    [Test] public void ByRefParameter() {
+      var str = "abc";
+      Assert.DoesNotThrow(() => Instance.ByRefParameter(ref str));
+      Assert.Throws<ArgumentNullException>(() => Instance.ByRefParameter(ref str));
     }
   }
 }

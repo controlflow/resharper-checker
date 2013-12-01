@@ -34,6 +34,8 @@ namespace ReSharper.Weaver.Fody {
       ParameterDefinition reference, [NotNull] MethodReference constructorReference,
       [NotNull] Instruction target, [NotNull] string paramName, [NotNull] string message) {
 
+
+
       return new[] {
         Instruction.Create(OpCodes.Ldarg, reference),
         Instruction.Create(OpCodes.Brtrue, target),

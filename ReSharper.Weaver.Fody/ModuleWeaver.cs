@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace ReSharper.Weaver.Fody {
   public sealed class ModuleWeaver {
@@ -28,28 +27,21 @@ namespace ReSharper.Weaver.Fody {
       foreach (var typeDefinition in myModuleDefinition.GetTypes()) {
         foreach (var methodDefinition in typeDefinition.Methods) {
           if (methodDefinition.HasBody) {
-            
             EmitParametersCheck(methodDefinition, notNullAttributes, argumentNullCtor);
-
           }
         }
       }
 
-
-
-
     }
 
     // todo: ref parameters
-    private void EmitParametersCheck([NotNull] MethodDefinition methodDefinition,
+    private static void EmitParametersCheck([NotNull] MethodDefinition methodDefinition,
                                      [NotNull] HashSet<MetadataToken> notNullAttributes,
                                      [NotNull] MethodReference argumentNullCtor) {
       if (!methodDefinition.HasParameters) return;
 
-
-
-      List<Instruction> checks = null;
-      Instruction firstInstruction = null; //methodDefinition.Body.Instructions[0];
+      Stack<Instruction[]> checks = null;
+      Instruction firstInstruction = null;
 
       var parameters = methodDefinition.Parameters; // walk parameters in reverse order
       for (var index1 = parameters.Count - 1; index1 >= 0; index1--) {
@@ -76,9 +68,9 @@ namespace ReSharper.Weaver.Fody {
                 firstInstruction, parameterDefinition.Name,
                 "Violation of parameter [NotNull] contract"); // xmldoc?
 
-              checks = checks ?? new List<Instruction>();
-              checks.AddRange(nullCheckInstructions);
-              firstInstruction = checks[0];
+              checks = checks ?? new Stack<Instruction[]>();
+              checks.Push(nullCheckInstructions);
+              firstInstruction = nullCheckInstructions[0];
             }
           }
         }
@@ -90,8 +82,14 @@ namespace ReSharper.Weaver.Fody {
 
         instructions.Clear();
 
-        foreach (var instruction in checks) instructions.Add(instruction);
-        foreach (var instruction in oldBody) instructions.Add(instruction);
+        while (checks.Count > 0)
+          foreach (var instruction in checks.Pop())
+            instructions.Add(instruction);
+
+        foreach (var instruction in oldBody)
+          instructions.Add(instruction);
+
+        methodDefinition.Body.OptimizeMacros(); // :O
       }
     }
   }
