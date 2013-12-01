@@ -74,9 +74,15 @@ namespace ReSharper.Weaver.Tests
     }
 
     [Test] public void ByRefParameter() {
-      var str = "abc";
+      string str = "abc", nullStr = null;
       Assert.DoesNotThrow(() => Instance.ByRefParameter(ref str));
-      Assert.Throws<ArgumentNullException>(() => Instance.ByRefParameter(ref str));
+      Assert.Throws<ArgumentNullException>(() => Instance.ByRefParameter(ref nullStr));
+    }
+
+    [Test] public void ParamsArgument() {
+      Assert.DoesNotThrow(() => Instance.ParamsArgument("abc", "def"));
+      Assert.Throws<NullReferenceException>(() => Instance.ParamsArgument("abc", null));
+      Assert.Throws<ArgumentNullException>(() => Instance.ParamsArgument(null));
     }
   }
 }

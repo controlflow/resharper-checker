@@ -1,7 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace ReSharper.Weaver.Fody {
   public class ArgumentNullExceptionUtil {
@@ -15,7 +14,7 @@ namespace ReSharper.Weaver.Fody {
       var typeDefinition = typeReference.Resolve();
       if (typeDefinition == null) return null;
 
-      // look for constructor with two arguments
+      // look for constructor with two 'string' arguments
       foreach (var methodDefinition in typeDefinition.Methods) {
         if (methodDefinition.IsConstructor && methodDefinition.HasParameters) {
           var parameters = methodDefinition.Parameters;
@@ -28,22 +27,6 @@ namespace ReSharper.Weaver.Fody {
       }
 
       return null;
-    }
-
-    [NotNull] public static Instruction[] EmitNullCheckInstruction(
-      ParameterDefinition reference, [NotNull] MethodReference constructorReference,
-      [NotNull] Instruction target, [NotNull] string paramName, [NotNull] string message) {
-
-
-
-      return new[] {
-        Instruction.Create(OpCodes.Ldarg, reference),
-        Instruction.Create(OpCodes.Brtrue, target),
-        Instruction.Create(OpCodes.Ldstr, paramName),
-        Instruction.Create(OpCodes.Ldstr, message),
-        Instruction.Create(OpCodes.Newobj, constructorReference),
-        Instruction.Create(OpCodes.Throw)
-      };
     }
   }
 }

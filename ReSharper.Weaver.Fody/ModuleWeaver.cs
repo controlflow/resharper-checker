@@ -22,7 +22,7 @@ namespace ReSharper.Weaver.Fody {
       var argumentNullCtor = ArgumentNullExceptionUtil.FindConstructor(myModuleDefinition);
       if (argumentNullCtor == null) return;
 
-
+      //Expression<Action<string, string>> expr = (a, b) => new ArgumentNullException(a, b);
 
       foreach (var typeDefinition in myModuleDefinition.GetTypes()) {
         foreach (var methodDefinition in typeDefinition.Methods) {
@@ -32,6 +32,26 @@ namespace ReSharper.Weaver.Fody {
         }
       }
 
+    }
+
+    [NotNull] public static Instruction[] EmitNullCheckInstruction(
+      ParameterDefinition parameterToCheck, [NotNull] MethodReference constructorReference,
+      [NotNull] Instruction target, [NotNull] string paramName, [NotNull] string message) {
+
+      var instructions = new List<Instruction>();
+      instructions.Add(Instruction.Create(OpCodes.Ldarg, parameterToCheck));
+
+      if (parameterToCheck.ParameterType.IsByReference) {
+        instructions.Add(Instruction.Create(OpCodes.Ldind_Ref));
+      }
+
+      instructions.Add(Instruction.Create(OpCodes.Brtrue, target));
+      instructions.Add(Instruction.Create(OpCodes.Ldstr, paramName));
+      instructions.Add(Instruction.Create(OpCodes.Ldstr, message));
+      instructions.Add(Instruction.Create(OpCodes.Newobj, constructorReference));
+      instructions.Add(Instruction.Create(OpCodes.Throw));
+
+      return instructions.ToArray();
     }
 
     // todo: ref parameters
@@ -63,10 +83,14 @@ namespace ReSharper.Weaver.Fody {
                 firstInstruction = instrictions[0];
               }
 
-              var nullCheckInstructions = ArgumentNullExceptionUtil.EmitNullCheckInstruction(
+              var message = string.Format(
+                "[NotNull] contract violation in method {0}",
+                methodDefinition.GetXmlDocId());
+
+              var nullCheckInstructions = EmitNullCheckInstruction(
                 parameterDefinition, argumentNullCtor,
                 firstInstruction, parameterDefinition.Name,
-                "Violation of parameter [NotNull] contract"); // xmldoc?
+                message); // xmldoc?
 
               checks = checks ?? new Stack<Instruction[]>();
               checks.Push(nullCheckInstructions);

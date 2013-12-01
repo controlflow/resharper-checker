@@ -60,28 +60,19 @@ namespace ReSharper.Weaver.Fody {
       if (typeReference.IsGenericParameter) {
         var parameter = (GenericParameter) typeReference;
         return builder
-          .Append(parameter.Type == GenericParameterType.Method ? "``" : "`")
+          .Append((parameter.Type == GenericParameterType.Method) ? "``" : "`")
           .Append(parameter.Position);
       }
 
       if (typeReference.IsArray) {
         builder.AppendType(typeReference.GetElementType(), shortNameOnly);
 
-        var arrayType = (ArrayType)typeReference;
+        var arrayType = (ArrayType) typeReference;
+        var elementTypeName = arrayType.ElementType.Name;
+        var suffix = arrayType.Name.Substring(elementTypeName.Length);
 
-        var name = arrayType.Name;
-        var foo = arrayType.ElementType.Name;
-
-
-
-        if (((ArrayType)typeReference).IsVector) return builder.Append("[]"); // szarray
-
-        return builder;
-        //return builder.Append(MetadataArrayType
-        //  .GetRankText(arrayType.Rank, arrayType.Sizes, arrayType.LBounds)
-        //  .Replace("...", ".."));
+        return builder.Append(suffix);
       }
-
 
       builder.Append(shortNameOnly ? typeReference.Name : typeReference.FullName);
 

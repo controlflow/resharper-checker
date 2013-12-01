@@ -22,5 +22,11 @@ namespace ReSharper.Weaver.TestData
     public string ByRefParameter([NotNull] ref string arg) {
       return arg;
     }
+
+    public void ParamsArgument([NotNull] params string[] xs) {
+      foreach (var s in xs) {
+        GC.KeepAlive(s.Length);
+      }
+    }
   }
 }
