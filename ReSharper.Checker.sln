@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.20827.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Checker.Fody", "ReSharper.Checker\ReSharper.Checker.Fody.csproj", "{0D42B203-63E5-4BCC-A4CE-293104A23CF5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Checker", "ReSharper.Checker\ReSharper.Checker.csproj", "{0D42B203-63E5-4BCC-A4CE-293104A23CF5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Checker.TestApp", "ReSharper.Checker.TestApp\ReSharper.Checker.TestApp.csproj", "{C638B301-2C12-4822-9700-CED81F6F3FBB}"
 EndProject

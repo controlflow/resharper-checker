@@ -1,4 +1,7 @@
-﻿namespace JetBrains.ReSharper.Checker.TestApp
+﻿using System;
+using JetBrains.Annotations;
+
+namespace JetBrains.ReSharper.Checker.TestApp
 {
   public class BooBase {
     public BooBase(int id) {
@@ -24,7 +27,14 @@
   }
 
   public static class Program {
+    static void Foo([NotNull] string arg) {
+      Console.WriteLine(arg);
+    }
+
     static void Main() {
+      Foo("abc");
+      Foo(null);
+
       var boo = new Boo(123, "Alex", 42);
 
     }

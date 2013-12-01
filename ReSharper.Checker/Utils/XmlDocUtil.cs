@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
-using JetBrains.ReSharper.Checker.Properties;
+using JetBrains.Annotations;
 using Mono.Cecil;
 
 namespace JetBrains.ReSharper.Checker {
