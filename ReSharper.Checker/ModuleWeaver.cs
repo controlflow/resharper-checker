@@ -93,7 +93,7 @@ namespace JetBrains.ReSharper.Checker {
             }
 
             var nullCheckInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
-              parameterDefinition, ArgumentNullCtor, firstInstruction,
+              parameterDefinition, parameterType, ArgumentNullCtor, firstInstruction,
               parameterDefinition.Name, "[NotNull] requirement contract violation");
 
             inputСhecks = inputСhecks ?? new Stack<Instruction[]>();
@@ -108,7 +108,7 @@ namespace JetBrains.ReSharper.Checker {
             var target = (outputChecks != null) ? outputChecks.Peek()[0] : lastInstruction;
 
             var nullCheckInstructions2 = ChecksEmitUtil.EmitNullCheckInstructions(
-              parameterDefinition, ArgumentNullCtor, target,
+              parameterDefinition, parameterType, ArgumentNullCtor, target,
               parameterDefinition.Name, "[NotNull] ensires contract violation");
 
             outputChecks = outputChecks ?? new Queue<Instruction[]>();
@@ -140,7 +140,8 @@ namespace JetBrains.ReSharper.Checker {
           var target = (outputChecks != null) ? outputChecks.Peek()[0] : lastInstruction;
 
           var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
-            null, ArgumentNullCtor, target, "$return", "[NotNull] ensures contract violation");
+            null, returnType.ReturnType, ArgumentNullCtor,
+            target, "$return", "[NotNull] ensures contract violation");
 
           outputChecks = outputChecks ?? new Queue<Instruction[]>();
           outputChecks.Enqueue(checkInstructions);

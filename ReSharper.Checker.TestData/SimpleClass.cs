@@ -62,12 +62,18 @@ namespace JetBrains.ReSharper.Checker.TestData
     [NotNull] public string BuggyMethod([NotNull] out string value) {
       var cache = new Dictionary<int, string>();
       if (!cache.TryGetValue(42, out value)) {
+        // ReSharper disable once AssignNullToNotNullAttribute
         value = null;
       }
 
       return "smth";
     }
 
-    // todo: generics
+    [NotNull] public T1 GenericChecks<T1, T2, T3>(
+      [NotNull] T1 arg1, [NotNull] T2 arg2, [NotNull] T3 arg3)
+      where T2 : struct
+      where T3 : class {
+      return arg1;
+    }
   }
 }

@@ -16,9 +16,12 @@ namespace JetBrains.ReSharper.Checker
         return IsNullableType(reference.GetElementType());
       }
 
-      // todo: generic type
-
       if (reference.MetadataType == MetadataType.Void) {
+        return false;
+      }
+
+      var genericParameter = reference as GenericParameter;
+      if (genericParameter != null && genericParameter.HasNotNullableValueTypeConstraint) {
         return false;
       }
 
@@ -48,19 +51,23 @@ namespace JetBrains.ReSharper.Checker
     }
 
     [NotNull] public static Instruction[] EmitNullCheckInstructions(
-      [CanBeNull] ParameterDefinition parameterToCheck, [NotNull] MethodReference constructorReference,
+      [CanBeNull] ParameterDefinition parameterToCheck,
+      [NotNull] TypeReference checkValueType,
+      [NotNull] MethodReference constructorReference,
       [NotNull] Instruction target, [NotNull] string paramName, [NotNull] string message) {
 
       var instructions = new List<Instruction>();
 
       if (parameterToCheck != null) {
-        // TODO: support for unbounded generics!
-
         instructions.Add(LoadArgument(parameterToCheck));
 
         if (parameterToCheck.ParameterType.IsByReference) {
           instructions.Add(Instruction.Create(OpCodes.Ldind_Ref));
         }
+      }
+
+      if (checkValueType.IsGenericParameter) {
+        instructions.Add(Instruction.Create(OpCodes.Box, checkValueType));
       }
 
       instructions.Add(Instruction.Create(OpCodes.Brtrue_S, target));

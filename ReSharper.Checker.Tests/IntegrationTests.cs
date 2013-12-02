@@ -112,5 +112,13 @@ namespace JetBrains.ReSharper.Checker.Tests {
         string arg; Instance.BuggyMethod(out arg);
       });
     }
+
+    [Test] public void GenericChecks() {
+      Assert.DoesNotThrow(() => Instance.GenericChecks("abc", 123, "def"));
+      Assert.DoesNotThrow(() => Instance.GenericChecks("abc", 0, "def"));
+      const string nullStr = null;
+      Assert.Throws<ArgumentNullException>(() => Instance.GenericChecks(nullStr, 123, "def"));
+      Assert.Throws<ArgumentNullException>(() => Instance.GenericChecks("abc", 123, nullStr));
+    }
   }
 }
