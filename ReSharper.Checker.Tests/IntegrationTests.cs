@@ -1,143 +1,94 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
 using JetBrains.ReSharper.Checker.TestData;
-using Mono.Cecil;
-using Mono.Cecil.Pdb;
 using NUnit.Framework;
-using ReSharper.Weaver.Tests;
 
 namespace JetBrains.ReSharper.Checker.Tests {
   [TestFixture]
   public sealed class IntegrationTests {
-    private readonly Assembly myResultingAssembly;
-
-    public IntegrationTests() {
-      // move to assembly fixture
-
-      var assembly = typeof(SimpleClass).Assembly;
-      var testDataAssemblyPath = MockAssemblyResolver.FindPath(assembly);
-
-      var outputDirectory = Path.GetDirectoryName(testDataAssemblyPath);
-      var assemblyResolver = new MockAssemblyResolver(outputDirectory);
-
-      var targetAssemblyPath = Path.ChangeExtension(testDataAssemblyPath, "2.dll");
-      File.Copy(testDataAssemblyPath, targetAssemblyPath, overwrite: true);
-
-      var readerParameters = new ReaderParameters {AssemblyResolver = assemblyResolver};
-      var writerParameters = new WriterParameters();
-
-      var testDataSymbolsPath = Path.ChangeExtension(testDataAssemblyPath, "pdb");
-      if (File.Exists(testDataSymbolsPath)) {
-        readerParameters.SymbolReaderProvider = new PdbReaderProvider();
-        readerParameters.ReadSymbols = true;
-        writerParameters.SymbolWriterProvider = new PdbWriterProvider();
-        writerParameters.WriteSymbols = true;
-
-        File.Copy(testDataSymbolsPath, Path.ChangeExtension(testDataSymbolsPath, "2.pdb"), overwrite: true);
-      }
-
-      var moduleDefinition = ModuleDefinition.ReadModule(targetAssemblyPath, readerParameters);
-      var weavingTask = new ModuleWeaver {
-        ModuleDefinition = moduleDefinition,
-        AssemblyResolver = assemblyResolver
-      };
-
-      weavingTask.Execute();
-      moduleDefinition.Write(targetAssemblyPath, writerParameters);
-
-      myResultingAssembly = Assembly.LoadFile(targetAssemblyPath);
-    }
-
-    private dynamic Instance {
-      get {
-        var type = myResultingAssembly.GetType(typeof(SimpleClass).FullName);
-        Assert.That(type, Is.Not.Null);
-
-        return Activator.CreateInstance(type);
-      }
+    private dynamic SimpleClass {
+      get { return CheckerTestAssembly.GetWeavedType<SimpleClass>(); }
     }
 
     [Test] public void SingleArgument() {
-      Assert.DoesNotThrow(() => Instance.SingleArgument("abc"));
-      Assert.Throws<ArgumentNullException>(() => Instance.SingleArgument(null));
+      Assert.DoesNotThrow(() => SimpleClass.SingleArgument("abc"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.SingleArgument(null));
     }
 
     [Test] public void MultipleArguments() {
-      Assert.DoesNotThrow(() => Instance.MultipleArguments("abc", "def", "ghi"));
-      Assert.DoesNotThrow(() => Instance.MultipleArguments("abc", "def", null));
-      Assert.Throws<ArgumentNullException>(() => Instance.MultipleArguments(null, "def", null));
-      Assert.Throws<ArgumentNullException>(() => Instance.MultipleArguments("abc", null, null));
+      Assert.DoesNotThrow(() => SimpleClass.MultipleArguments("abc", "def", "ghi"));
+      Assert.DoesNotThrow(() => SimpleClass.MultipleArguments("abc", "def", null));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.MultipleArguments(null, "def", null));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.MultipleArguments("abc", null, null));
     }
 
     [Test] public void ByRefParameter() {
       string str = "abc", nullStr = null;
-      Assert.DoesNotThrow(() => Instance.ByRefParameter(ref str, "boo"));
-      Assert.Throws<ArgumentNullException>(() => Instance.ByRefParameter(ref nullStr, "boo"));
-      Assert.Throws<ArgumentNullException>(() => Instance.ByRefParameter(ref str, null));
+      Assert.DoesNotThrow(() => SimpleClass.ByRefParameter(ref str, "boo"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.ByRefParameter(ref nullStr, "boo"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.ByRefParameter(ref str, null));
     }
 
     [Test] public void ByRefOutParameter() {
       string str;
-      Assert.DoesNotThrow(() => Instance.ByRefOutParameter(out str, "abc"));
-      Assert.Throws<ArgumentNullException>(() => Instance.ByRefOutParameter(out str, null));
+      Assert.DoesNotThrow(() => SimpleClass.ByRefOutParameter(out str, "abc"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.ByRefOutParameter(out str, null));
     }
 
     [Test] public void ParamsArgument() {
-      Assert.DoesNotThrow(() => Instance.ParamsArgument("abc", "def"));
-      Assert.Throws<NullReferenceException>(() => Instance.ParamsArgument("abc", null));
-      Assert.Throws<ArgumentNullException>(() => Instance.ParamsArgument(null));
+      Assert.DoesNotThrow(() => SimpleClass.ParamsArgument("abc", "def"));
+      Assert.Throws<NullReferenceException>(() => SimpleClass.ParamsArgument("abc", null));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.ParamsArgument(null));
     }
 
     [Test] public void ReturnValue() {
-      Assert.DoesNotThrow(() => Instance.ReturnValue("abc"));
-      Assert.Throws<ArgumentNullException>(() => Instance.ReturnValue(null));
+      Assert.DoesNotThrow(() => SimpleClass.ReturnValue("abc"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.ReturnValue(null));
     }
 
     [Test] public void PointersTest() {
-      Assert.DoesNotThrow(() => Instance.PointersTest(true));
-      Assert.Throws<ArgumentNullException>(() => Instance.PointersTest(false));
+      Assert.DoesNotThrow(() => SimpleClass.PointersTest(true));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.PointersTest(false));
     }
 
     [Test] public void IncorrectAttributeUsages() {
       Assert.DoesNotThrow(() => {
         var arg = 42;
-        Instance.IncorrectAttributeUsage(arg, ref arg, out arg);
-        Instance.IncorrectAttributeUsage2();
+        SimpleClass.IncorrectAttributeUsage(arg, ref arg, out arg);
+        SimpleClass.IncorrectAttributeUsage2();
       });
     }
 
     [Test] public void BuggyMethod() {
       Assert.Throws<ArgumentNullException>(() => {
-        string arg; Instance.BuggyMethod(out arg);
+        string arg; SimpleClass.BuggyMethod(out arg);
       });
     }
 
     [Test] public void GenericChecks() {
-      Assert.DoesNotThrow(() => Instance.GenericChecks("abc", 123, "def"));
-      Assert.DoesNotThrow(() => Instance.GenericChecks("abc", 0, "def"));
+      Assert.DoesNotThrow(() => SimpleClass.GenericChecks("abc", 123, "def"));
+      Assert.DoesNotThrow(() => SimpleClass.GenericChecks("abc", 0, "def"));
       const string nullStr = null;
-      Assert.Throws<ArgumentNullException>(() => Instance.GenericChecks(nullStr, 123, "def"));
-      Assert.Throws<ArgumentNullException>(() => Instance.GenericChecks("abc", 123, nullStr));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.GenericChecks(nullStr, 123, "def"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.GenericChecks("abc", 123, nullStr));
     }
 
     [Test] public void InheritedAnnotations() {
-      Assert.DoesNotThrow(() => Instance.AbstractMethod("abc"));
-      Assert.DoesNotThrow(() => Instance.VirtualMethod("abc", "abc"));
-      Assert.DoesNotThrow(() => Instance.InterfaceMethod("abc"));
-      Assert.DoesNotThrow(() => Instance.InterfaceMethod2("abc"));
-      Assert.DoesNotThrow(() => Instance.MultipleImplMethod("abc", "def"));
-      Assert.DoesNotThrow(() => Instance.VirtualMethod2("abc", "def"));
+      Assert.DoesNotThrow(() => SimpleClass.AbstractMethod("abc"));
+      Assert.DoesNotThrow(() => SimpleClass.VirtualMethod("abc", "abc"));
+      Assert.DoesNotThrow(() => SimpleClass.InterfaceMethod("abc"));
+      Assert.DoesNotThrow(() => SimpleClass.InterfaceMethod2("abc"));
+      Assert.DoesNotThrow(() => SimpleClass.MultipleImplMethod("abc", "def"));
+      Assert.DoesNotThrow(() => SimpleClass.VirtualMethod2("abc", "def"));
 
-      Assert.Throws<ArgumentNullException>(() => Instance.AbstractMethod(null));
-      Assert.Throws<ArgumentNullException>(() => Instance.VirtualMethod(null, "abc"));
-      Assert.Throws<ArgumentNullException>(() => Instance.VirtualMethod("abc", null));
-      Assert.Throws<ArgumentNullException>(() => Instance.InterfaceMethod(null));
-      Assert.Throws<ArgumentNullException>(() => Instance.InterfaceMethod2(null));
-      Assert.Throws<ArgumentNullException>(() => Instance.MultipleImplMethod("abc", null));
-      Assert.Throws<ArgumentNullException>(() => Instance.MultipleImplMethod(null, "def"));
-      Assert.Throws<ArgumentNullException>(() => Instance.VirtualMethod2("abc", null));
-      Assert.Throws<ArgumentNullException>(() => Instance.VirtualMethod2(null, "def"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.AbstractMethod(null));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.VirtualMethod(null, "abc"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.VirtualMethod("abc", null));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.InterfaceMethod(null));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.InterfaceMethod2(null));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.MultipleImplMethod("abc", null));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.MultipleImplMethod(null, "def"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.VirtualMethod2("abc", null));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.VirtualMethod2(null, "def"));
     }
   }
 }

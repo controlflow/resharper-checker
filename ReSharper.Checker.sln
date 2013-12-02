@@ -11,6 +11,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Checker.TestData"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Checker.Tests", "ReSharper.Checker.Tests\ReSharper.Checker.Tests.csproj", "{EE6DB3AE-970E-45CD-8053-BD928A99E49A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B2FC5567-4571-4610-A307-CB133326C508}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Checker.TestDataRef", "ReSharper.Checker.TestData\ReSharper.Checker.TestDataRef.csproj", "{630FCB35-1178-40AE-A5B7-1CB21A057C8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharper.Checker.TestDataNoRef", "ReSharper.Checker.TestData\ReSharper.Checker.TestDataNoRef.csproj", "{CC565934-36EC-4092-93F4-FC84137952FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,8 +39,22 @@ Global
 		{EE6DB3AE-970E-45CD-8053-BD928A99E49A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE6DB3AE-970E-45CD-8053-BD928A99E49A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE6DB3AE-970E-45CD-8053-BD928A99E49A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{630FCB35-1178-40AE-A5B7-1CB21A057C8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{630FCB35-1178-40AE-A5B7-1CB21A057C8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{630FCB35-1178-40AE-A5B7-1CB21A057C8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{630FCB35-1178-40AE-A5B7-1CB21A057C8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC565934-36EC-4092-93F4-FC84137952FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC565934-36EC-4092-93F4-FC84137952FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC565934-36EC-4092-93F4-FC84137952FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC565934-36EC-4092-93F4-FC84137952FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4C422215-795E-4536-B7E7-C3ACE4F8CBA4} = {B2FC5567-4571-4610-A307-CB133326C508}
+		{EE6DB3AE-970E-45CD-8053-BD928A99E49A} = {B2FC5567-4571-4610-A307-CB133326C508}
+		{630FCB35-1178-40AE-A5B7-1CB21A057C8F} = {B2FC5567-4571-4610-A307-CB133326C508}
+		{CC565934-36EC-4092-93F4-FC84137952FA} = {B2FC5567-4571-4610-A307-CB133326C508}
 	EndGlobalSection
 EndGlobal
