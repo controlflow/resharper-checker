@@ -106,5 +106,11 @@ namespace JetBrains.ReSharper.Checker.Tests {
         Instance.IncorrectAttributeUsage2();
       });
     }
+
+    [Test] public void BuggyMethod() {
+      Assert.Throws<ArgumentNullException>(() => {
+        string arg; Instance.BuggyMethod(out arg);
+      });
+    }
   }
 }

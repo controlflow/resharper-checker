@@ -38,7 +38,7 @@ namespace JetBrains.ReSharper.Checker {
         // todo: check OnlyPublicTypes flag
 
         foreach (var methodDefinition in typeDefinition.Methods) {
-          //if (methodDefinition.Name != "ReturnValue") {
+          //if (methodDefinition.Name != "BuggyMethod") {
           //  continue;
           //}
 
@@ -70,7 +70,8 @@ namespace JetBrains.ReSharper.Checker {
     private void EmitParametersCheck([NotNull] MethodDefinition methodDefinition) {
       if (!methodDefinition.HasParameters) return;
 
-      Stack<Instruction[]> inputСhecks = null, outputChecks = null;
+      Stack<Instruction[]> inputСhecks = null;
+      Queue<Instruction[]> outputChecks = null;
       Instruction firstInstruction = null, lastInstruction = null;
 
       var parameters = methodDefinition.Parameters; // walk parameters in reverse order
@@ -110,8 +111,8 @@ namespace JetBrains.ReSharper.Checker {
               parameterDefinition, ArgumentNullCtor, target,
               parameterDefinition.Name, "[NotNull] ensires contract violation");
 
-            outputChecks = outputChecks ?? new Stack<Instruction[]>();
-            outputChecks.Push(nullCheckInstructions2);
+            outputChecks = outputChecks ?? new Queue<Instruction[]>();
+            outputChecks.Enqueue(nullCheckInstructions2);
           }
         }
       }
@@ -141,8 +142,8 @@ namespace JetBrains.ReSharper.Checker {
           var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
             null, ArgumentNullCtor, target, "$return", "[NotNull] ensures contract violation");
 
-          outputChecks = outputChecks ?? new Stack<Instruction[]>();
-          outputChecks.Push(checkInstructions);
+          outputChecks = outputChecks ?? new Queue<Instruction[]>();
+          outputChecks.Enqueue(checkInstructions);
           emitReturnValueCheck = true;
         }
       }
@@ -154,7 +155,7 @@ namespace JetBrains.ReSharper.Checker {
         retInstruction.OpCode = emitReturnValueCheck ? OpCodes.Dup : OpCodes.Nop;
         retInstruction.Operand = null;
 
-        foreach (var instruction in outputChecks.Pop())
+        foreach (var instruction in outputChecks.Dequeue())
           instructions.Add(instruction);
 
         instructions.Add(lastInstruction);

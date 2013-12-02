@@ -18,12 +18,11 @@ namespace JetBrains.ReSharper.Checker
 
       // todo: generic type
 
-      if (reference.FullName == "System.Void") {
+      if (reference.MetadataType == MetadataType.Void) {
         return false;
       }
 
       return true;
-      // todo: void
     }
 
     [NotNull] static Instruction LoadArgument([NotNull] ParameterDefinition parameter) {

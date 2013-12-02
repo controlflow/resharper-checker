@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using JetBrains.Annotations;
 
@@ -28,23 +29,22 @@ namespace JetBrains.ReSharper.Checker.TestApp
   }
 
   public static class Program {
-    [NotNull]
-    static string Foo(string arg) {
-      Console.WriteLine(arg);
+    static string UnexpectedNullReturn() {
+      return null;
+    }
 
-      if (arg == null || arg.Length > 10) {
-        Console.WriteLine();
-        return arg;
+    [NotNull] static string DoSmth([NotNull] out string value) {
+      var cache = new Dictionary<int, string>();
+      if (!cache.TryGetValue(42, out value)) {
+        value = UnexpectedNullReturn();
       }
 
-      Console.WriteLine();
-
-      return arg;
+      return "smth";
     }
 
     static void Main() {
-      Foo("abc");
-      Foo(null);
+      string foo;
+      DoSmth(out foo);
 
       //ContractFailureKind
 

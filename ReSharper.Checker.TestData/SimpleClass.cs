@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 
 namespace JetBrains.ReSharper.Checker.TestData
@@ -57,6 +58,15 @@ namespace JetBrains.ReSharper.Checker.TestData
     }
 
     [NotNull] public void IncorrectAttributeUsage2() { }
+
+    [NotNull] public string BuggyMethod([NotNull] out string value) {
+      var cache = new Dictionary<int, string>();
+      if (!cache.TryGetValue(42, out value)) {
+        value = null;
+      }
+
+      return "smth";
+    }
 
     // todo: generics
   }
