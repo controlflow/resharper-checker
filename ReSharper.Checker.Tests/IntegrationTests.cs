@@ -72,8 +72,15 @@ namespace JetBrains.ReSharper.Checker.Tests {
 
     [Test] public void ByRefParameter() {
       string str = "abc", nullStr = null;
-      Assert.DoesNotThrow(() => Instance.ByRefParameter(ref str));
-      Assert.Throws<ArgumentNullException>(() => Instance.ByRefParameter(ref nullStr));
+      Assert.DoesNotThrow(() => Instance.ByRefParameter(ref str, "boo"));
+      Assert.Throws<ArgumentNullException>(() => Instance.ByRefParameter(ref nullStr, "boo"));
+      Assert.Throws<ArgumentNullException>(() => Instance.ByRefParameter(ref str, null));
+    }
+
+    [Test] public void ByRefOutParameter() {
+      string str;
+      Assert.DoesNotThrow(() => Instance.ByRefOutParameter(out str, "abc"));
+      Assert.Throws<ArgumentNullException>(() => Instance.ByRefOutParameter(out str, null));
     }
 
     [Test] public void ParamsArgument() {
@@ -82,14 +89,22 @@ namespace JetBrains.ReSharper.Checker.Tests {
       Assert.Throws<ArgumentNullException>(() => Instance.ParamsArgument(null));
     }
 
-    [Test] public void ReturnsNotNull() {
-      Assert.DoesNotThrow(() => Instance.ReturnsNotNull("abc"));
-      Assert.Throws<ArgumentNullException>(() => Instance.ReturnsNotNull(null));
+    [Test] public void ReturnValue() {
+      Assert.DoesNotThrow(() => Instance.ReturnValue("abc"));
+      Assert.Throws<ArgumentNullException>(() => Instance.ReturnValue(null));
     }
 
     [Test] public void PointersTest() {
       Assert.DoesNotThrow(() => Instance.PointersTest(true));
       Assert.Throws<ArgumentNullException>(() => Instance.PointersTest(false));
+    }
+
+    [Test] public void IncorrectAttributeUsages() {
+      Assert.DoesNotThrow(() => {
+        var arg = 42;
+        Instance.IncorrectAttributeUsage(arg, ref arg, out arg);
+        Instance.IncorrectAttributeUsage2();
+      });
     }
   }
 }

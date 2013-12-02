@@ -4,13 +4,10 @@ using System.Xml.Linq;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 
 namespace JetBrains.ReSharper.Checker {
   [UsedImplicitly]
   public sealed class ModuleWeaver {
-    
-
     public ModuleWeaver() {
       Config = new XElement("Foo");
       LogInfo = Console.WriteLine;
@@ -41,7 +38,9 @@ namespace JetBrains.ReSharper.Checker {
         // todo: check OnlyPublicTypes flag
 
         foreach (var methodDefinition in typeDefinition.Methods) {
-
+          //if (methodDefinition.Name != "ReturnValue") {
+          //  continue;
+          //}
 
           if (methodDefinition.HasBody) {
             EmitParametersCheck(methodDefinition);
@@ -59,14 +58,20 @@ namespace JetBrains.ReSharper.Checker {
         if (NotNullAttributes.Contains(metadataToken)) return true;
       }
 
+      // todo: inherited attributes!
+
+
+
       return false;
     }
+
+    
 
     private void EmitParametersCheck([NotNull] MethodDefinition methodDefinition) {
       if (!methodDefinition.HasParameters) return;
 
-      Stack<Instruction[]> inputСhecks = null;
-      Instruction firstInstruction = null;
+      Stack<Instruction[]> inputСhecks = null, outputChecks = null;
+      Instruction firstInstruction = null, lastInstruction = null;
 
       var parameters = methodDefinition.Parameters; // walk parameters in reverse order
       for (var index1 = parameters.Count - 1; index1 >= 0; index1--) {
@@ -75,62 +80,84 @@ namespace JetBrains.ReSharper.Checker {
           // todo: check parameter type is nullable/can be over brtrue
           // todo: check parameter type is byref type, check ref-parameter
           var parameterType = parameterDefinition.ParameterType;
+          if (!ChecksEmitUtil.IsNullableType(parameterType))
+            continue;
 
-          // init target of null check brtrue jump
-          if (firstInstruction == null) {
-            var instrictions = methodDefinition.Body.Instructions;
-            if (instrictions.Count == 0) return;
+          if (!parameterDefinition.IsOut) {
+            // init target of null check brtrue jump
+            if (firstInstruction == null) {
+              var instrictions = methodDefinition.Body.Instructions;
+              if (instrictions.Count == 0) return; // shit happens
+              firstInstruction = instrictions[0];
+            }
 
-            firstInstruction = instrictions[0];
+            var nullCheckInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
+              parameterDefinition, ArgumentNullCtor, firstInstruction,
+              parameterDefinition.Name, "[NotNull] requirement contract violation");
+
+            inputСhecks = inputСhecks ?? new Stack<Instruction[]>();
+            inputСhecks.Push(nullCheckInstructions);
+
+            firstInstruction = nullCheckInstructions[0];
           }
 
-          const string message = "[NotNull] contract violation";
+          // out parameters
+          if (parameterType.IsByReference) {
+            lastInstruction = lastInstruction ?? Instruction.Create(OpCodes.Ret);
+            var target = (outputChecks != null) ? outputChecks.Peek()[0] : lastInstruction;
 
-          var nullCheckInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
-            parameterDefinition, ArgumentNullCtor,
-            firstInstruction, parameterDefinition.Name, message);
+            var nullCheckInstructions2 = ChecksEmitUtil.EmitNullCheckInstructions(
+              parameterDefinition, ArgumentNullCtor, target,
+              parameterDefinition.Name, "[NotNull] ensires contract violation");
 
-          inputСhecks = inputСhecks ?? new Stack<Instruction[]>();
-          inputСhecks.Push(nullCheckInstructions);
-
-          firstInstruction = nullCheckInstructions[0];
+            outputChecks = outputChecks ?? new Stack<Instruction[]>();
+            outputChecks.Push(nullCheckInstructions2);
+          }
         }
       }
 
       var instructions = methodDefinition.Body.Instructions;
 
       if (inputСhecks != null) {
-        
         var oldBody = instructions.ToArray();
-
         instructions.Clear();
 
         while (inputСhecks.Count > 0)
-          foreach (var instruction in inputСhecks.Pop()) instructions.Add(instruction);
+          foreach (var instruction in inputСhecks.Pop())
+            instructions.Add(instruction);
 
-        foreach (var instruction in oldBody) instructions.Add(instruction);
+        foreach (var instruction in oldBody)
+          instructions.Add(instruction);
       }
 
       var returnType = methodDefinition.MethodReturnType;
-      if (IsAnnotatedWithNotNull(methodDefinition)) {
+      var emitReturnValueCheck = false;
+
+      if (ChecksEmitUtil.IsNullableType(returnType.ReturnType) && !returnType.ReturnType.IsByReference) {
+        if (IsAnnotatedWithNotNull(methodDefinition) || IsAnnotatedWithNotNull(returnType)) {
+          lastInstruction = lastInstruction ?? Instruction.Create(OpCodes.Ret);
+          var target = (outputChecks != null) ? outputChecks.Peek()[0] : lastInstruction;
+
+          var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
+            null, ArgumentNullCtor, target, "$return", "[NotNull] ensures contract violation");
+
+          outputChecks = outputChecks ?? new Stack<Instruction[]>();
+          outputChecks.Push(checkInstructions);
+          emitReturnValueCheck = true;
+        }
+      }
+
+      if (lastInstruction != null) {
         var retInstruction = instructions[instructions.Count - 1];
 
-        // replace ret with dup
-        retInstruction.OpCode = OpCodes.Dup;
+        // replace ret with dup or nop
+        retInstruction.OpCode = emitReturnValueCheck ? OpCodes.Dup : OpCodes.Nop;
         retInstruction.Operand = null;
 
-        // in
-        var newRetInstruction = Instruction.Create(OpCodes.Ret);
-        
-
-        var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
-          null, ArgumentNullCtor, newRetInstruction, "return value", "[NotNull] contract");
-
-        foreach (var instruction in checkInstructions) {
+        foreach (var instruction in outputChecks.Pop())
           instructions.Add(instruction);
-        }
 
-        instructions.Add(newRetInstruction);
+        instructions.Add(lastInstruction);
       }
     }
   }

@@ -19,8 +19,13 @@ namespace JetBrains.ReSharper.Checker.TestData
       }
     }
 
-    public string ByRefParameter([NotNull] ref string arg) {
-      return arg;
+    // ReSharper disable once RedundantAssignment
+    public void ByRefParameter([NotNull] ref string arg, string value) {
+      arg = value;
+    }
+
+    public void ByRefOutParameter([NotNull] out string outArg, string value) {
+      outArg = value;
     }
 
     public void ParamsArgument([NotNull] params string[] xs) {
@@ -29,18 +34,30 @@ namespace JetBrains.ReSharper.Checker.TestData
       }
     }
 
-    [NotNull] public string ReturnsNotNull(string input) {
+    [NotNull] public string ReturnValue(string input) {
       return input;
     }
 
     public unsafe void PointersTest(bool @throw) {
       var value = 42;
-      PointerPassThrough(@throw ? &value : null);
+      // ReSharper disable once AssignNullToNotNullAttribute
+      var t = PointerPassThrough(@throw ? &value : null);
+      GC.KeepAlive((IntPtr) t);
     }
 
     [NotNull]
-    private static unsafe int* PointerPassThrough([NotNull] int* ptr) {
+    private static unsafe int* PointerPassThrough(int* ptr) {
       return ptr;
     }
+
+    // ReSharper disable AnnotationRedundanceAtValueType
+    [NotNull] public int IncorrectAttributeUsage(
+      [NotNull] int arg, [NotNull] ref int arg2, [NotNull] out int arg3) {
+      return arg3 = 0;
+    }
+
+    [NotNull] public void IncorrectAttributeUsage2() { }
+
+    // todo: generics
   }
 }

@@ -6,6 +6,26 @@ using Mono.Cecil.Cil;
 namespace JetBrains.ReSharper.Checker
 {
   public static class ChecksEmitUtil {
+    public static bool IsNullableType([NotNull] TypeReference reference) {
+      if (reference.IsValueType) return false;
+      if (reference.IsFunctionPointer) return false;
+      if (reference.IsPointer) return true;
+      if (reference.IsArray) return true;
+
+      if (reference.IsByReference) {
+        return IsNullableType(reference.GetElementType());
+      }
+
+      // todo: generic type
+
+      if (reference.FullName == "System.Void") {
+        return false;
+      }
+
+      return true;
+      // todo: void
+    }
+
     [NotNull] static Instruction LoadArgument([NotNull] ParameterDefinition parameter) {
       var parameterIndex = parameter.Index;
       var methodDefinition = (MethodDefinition) parameter.Method;
@@ -35,6 +55,8 @@ namespace JetBrains.ReSharper.Checker
       var instructions = new List<Instruction>();
 
       if (parameterToCheck != null) {
+        // TODO: support for unbounded generics!
+
         instructions.Add(LoadArgument(parameterToCheck));
 
         if (parameterToCheck.ParameterType.IsByReference) {
