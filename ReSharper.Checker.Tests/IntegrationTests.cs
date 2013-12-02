@@ -120,5 +120,24 @@ namespace JetBrains.ReSharper.Checker.Tests {
       Assert.Throws<ArgumentNullException>(() => Instance.GenericChecks(nullStr, 123, "def"));
       Assert.Throws<ArgumentNullException>(() => Instance.GenericChecks("abc", 123, nullStr));
     }
+
+    [Test] public void InheritedAnnotations() {
+      Assert.DoesNotThrow(() => Instance.AbstractMethod("abc"));
+      Assert.DoesNotThrow(() => Instance.VirtualMethod("abc", "abc"));
+      Assert.DoesNotThrow(() => Instance.InterfaceMethod("abc"));
+      Assert.DoesNotThrow(() => Instance.InterfaceMethod2("abc"));
+      Assert.DoesNotThrow(() => Instance.MultipleImplMethod("abc", "def"));
+      Assert.DoesNotThrow(() => Instance.VirtualMethod2("abc", "def"));
+
+      Assert.Throws<ArgumentNullException>(() => Instance.AbstractMethod(null));
+      Assert.Throws<ArgumentNullException>(() => Instance.VirtualMethod(null, "abc"));
+      Assert.Throws<ArgumentNullException>(() => Instance.VirtualMethod("abc", null));
+      Assert.Throws<ArgumentNullException>(() => Instance.InterfaceMethod(null));
+      Assert.Throws<ArgumentNullException>(() => Instance.InterfaceMethod2(null));
+      Assert.Throws<ArgumentNullException>(() => Instance.MultipleImplMethod("abc", null));
+      Assert.Throws<ArgumentNullException>(() => Instance.MultipleImplMethod(null, "def"));
+      Assert.Throws<ArgumentNullException>(() => Instance.VirtualMethod2("abc", null));
+      Assert.Throws<ArgumentNullException>(() => Instance.VirtualMethod2(null, "def"));
+    }
   }
 }

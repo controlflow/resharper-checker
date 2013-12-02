@@ -55,7 +55,7 @@
   <ItemGroup>
     <Compile Include="Utils\ArgumentNullExceptionUtil.cs" />
     <Compile Include="Utils\ChecksEmitUtil.cs" />
-    <Compile Include="Utils\NotNullAttributeUtil.cs" />
+    <Compile Include="NotNullAttributeHelper.cs" />
     <Compile Include="ModuleWeaver.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

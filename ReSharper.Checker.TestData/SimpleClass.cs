@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 namespace JetBrains.ReSharper.Checker.TestData
 {
-  public class SimpleClass {
+  public class SimpleClass : SimpleBaseClass, ISimpleInterface, IOtherInterface {
     public void SingleArgument([NotNull] string arg) {
       GC.KeepAlive(arg.Length);
     }
@@ -74,6 +74,34 @@ namespace JetBrains.ReSharper.Checker.TestData
       where T2 : struct
       where T3 : class {
       return arg1;
+    }
+
+    public override string AbstractMethod(string arg) {
+      return arg;
+    }
+
+    public override string VirtualMethod(string arg, [NotNull] string arg2) {
+      return arg;
+    }
+
+    public string InterfaceMethod(string arg) {
+      return arg;
+    }
+
+    public void InterfaceMethod2(string arg) {
+      ((ISimpleInterface) this).InterfaceMethod2(arg);
+    }
+
+    void ISimpleInterface.InterfaceMethod2(string arg) {
+      Console.WriteLine(arg);
+    }
+
+    public string MultipleImplMethod(string arg1, string arg2) {
+      return arg1;
+    }
+
+    public override string VirtualMethod2(string arg, string arg2) {
+      return arg;
     }
   }
 }

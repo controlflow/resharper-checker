@@ -18,7 +18,7 @@ namespace JetBrains.ReSharper.Checker {
     [NotNull, UsedImplicitly] public XElement Config { get; set; }
     [NotNull, UsedImplicitly] public Action<string> LogInfo { get; set; }
 
-    [NotNull] private HashSet<MetadataToken> NotNullAttributes { get; set; }
+    [NotNull] private NotNullAttributeHelper NotNullAttributes { get; set; }
     [NotNull] private MethodReference ArgumentNullCtor { get; set; }
 
 
@@ -26,13 +26,14 @@ namespace JetBrains.ReSharper.Checker {
       LogInfo("DEBUG");
       LogInfo(Config.ToString());
 
-      NotNullAttributes = NotNullAttributeUtil.FindAttributes(ModuleDefinition);
-      if (NotNullAttributes.Count == 0) return;
+      NotNullAttributes = NotNullAttributeHelper.FindAttributes(ModuleDefinition);
+      if (!NotNullAttributes.NotNullAttributeFound) return;
 
       var argumentNullCtor = ArgumentNullExceptionUtil.FindConstructor(ModuleDefinition);
       if (argumentNullCtor == null) return;
 
       ArgumentNullCtor = argumentNullCtor;
+      var notNulls = new HashSet<int>();
 
       foreach (var typeDefinition in ModuleDefinition.GetTypes()) {
         // todo: check OnlyPublicTypes flag
@@ -42,33 +43,22 @@ namespace JetBrains.ReSharper.Checker {
           //  continue;
           //}
 
+          
+
           if (methodDefinition.HasBody) {
-            EmitParametersCheck(methodDefinition);
+            NotNullAttributes.CollectFrom(methodDefinition, notNulls);
+            if (notNulls.Count > 0) {
+              EmitParametersCheck(methodDefinition, notNulls);
+              notNulls.Clear();
+            }
           }
         }
       }
 
     }
 
-    private bool IsAnnotatedWithNotNull([NotNull] ICustomAttributeProvider provider) {
-      if (!provider.HasCustomAttributes) return false;
-
-      foreach (var attribute in provider.CustomAttributes) {
-        var metadataToken = attribute.AttributeType.MetadataToken;
-        if (NotNullAttributes.Contains(metadataToken)) return true;
-      }
-
-      // todo: inherited attributes!
-
-
-
-      return false;
-    }
-
-    
-
-    private void EmitParametersCheck([NotNull] MethodDefinition methodDefinition) {
-      if (!methodDefinition.HasParameters) return;
+    private void EmitParametersCheck(
+      [NotNull] MethodDefinition methodDefinition, [NotNull] HashSet<int> notNulls) {
 
       Stack<Instruction[]> inputСhecks = null;
       Queue<Instruction[]> outputChecks = null;
@@ -77,9 +67,8 @@ namespace JetBrains.ReSharper.Checker {
       var parameters = methodDefinition.Parameters; // walk parameters in reverse order
       for (var index1 = parameters.Count - 1; index1 >= 0; index1--) {
         var parameterDefinition = parameters[index1];
-        if (IsAnnotatedWithNotNull(parameterDefinition)) {
-          // todo: check parameter type is nullable/can be over brtrue
-          // todo: check parameter type is byref type, check ref-parameter
+        if (notNulls.Contains(parameterDefinition.Index)) {
+
           var parameterType = parameterDefinition.ParameterType;
           if (!ChecksEmitUtil.IsNullableType(parameterType))
             continue;
@@ -134,19 +123,20 @@ namespace JetBrains.ReSharper.Checker {
       var returnType = methodDefinition.MethodReturnType;
       var emitReturnValueCheck = false;
 
-      if (ChecksEmitUtil.IsNullableType(returnType.ReturnType) && !returnType.ReturnType.IsByReference) {
-        if (IsAnnotatedWithNotNull(methodDefinition) || IsAnnotatedWithNotNull(returnType)) {
-          lastInstruction = lastInstruction ?? Instruction.Create(OpCodes.Ret);
-          var target = (outputChecks != null) ? outputChecks.Peek()[0] : lastInstruction;
+      if (notNulls.Contains(-1) &&
+          ChecksEmitUtil.IsNullableType(returnType.ReturnType) &&
+          !returnType.ReturnType.IsByReference /* ugh! */) {
 
-          var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
-            null, returnType.ReturnType, ArgumentNullCtor,
-            target, "$return", "[NotNull] ensures contract violation");
+        lastInstruction = lastInstruction ?? Instruction.Create(OpCodes.Ret);
+        var target = (outputChecks != null) ? outputChecks.Peek()[0] : lastInstruction;
 
-          outputChecks = outputChecks ?? new Queue<Instruction[]>();
-          outputChecks.Enqueue(checkInstructions);
-          emitReturnValueCheck = true;
-        }
+        var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
+          null, returnType.ReturnType, ArgumentNullCtor,
+          target, "$return", "[NotNull] ensures contract violation");
+
+        outputChecks = outputChecks ?? new Queue<Instruction[]>();
+        outputChecks.Enqueue(checkInstructions);
+        emitReturnValueCheck = true;
       }
 
       if (lastInstruction != null) {
