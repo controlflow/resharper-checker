@@ -9,7 +9,7 @@ namespace JetBrains.ReSharper.Checker {
   [UsedImplicitly]
   public sealed class ModuleWeaver {
     public ModuleWeaver() {
-      Config = new XElement("Foo");
+      Config = new XElement("ReSharper.Checker", new XAttribute("Mode", "Declarations"));
       LogInfo = Console.WriteLine;
     }
 
@@ -18,7 +18,7 @@ namespace JetBrains.ReSharper.Checker {
     [NotNull, UsedImplicitly] public XElement Config { get; set; }
     [NotNull, UsedImplicitly] public Action<string> LogInfo { get; set; }
 
-    [NotNull] private NotNullAttributeHelper NotNullAttributes { get; set; }
+    [NotNull] private AttributeHelper Attributes { get; set; }
     [NotNull] private MethodReference ArgumentNullCtor { get; set; }
 
 
@@ -26,8 +26,8 @@ namespace JetBrains.ReSharper.Checker {
       LogInfo("DEBUG");
       LogInfo(Config.ToString());
 
-      NotNullAttributes = NotNullAttributeHelper.FindAttributes(ModuleDefinition);
-      if (!NotNullAttributes.NotNullAttributeFound) return;
+      Attributes = AttributeHelper.Create(ModuleDefinition);
+      if (!Attributes.AnyAttributesFound) return;
 
       var argumentNullCtor = ArgumentNullExceptionUtil.FindConstructor(ModuleDefinition);
       if (argumentNullCtor == null) return;
@@ -37,16 +37,15 @@ namespace JetBrains.ReSharper.Checker {
 
       foreach (var typeDefinition in ModuleDefinition.GetTypes()) {
         // todo: check OnlyPublicTypes flag
+        
 
         foreach (var methodDefinition in typeDefinition.Methods) {
           //if (methodDefinition.Name != "BuggyMethod") {
           //  continue;
           //}
 
-          
-
           if (methodDefinition.HasBody) {
-            NotNullAttributes.CollectFrom(methodDefinition, notNulls);
+            Attributes.CollectFrom(methodDefinition, notNulls);
             if (notNulls.Count > 0) {
               EmitParametersCheck(methodDefinition, notNulls);
               notNulls.Clear();
