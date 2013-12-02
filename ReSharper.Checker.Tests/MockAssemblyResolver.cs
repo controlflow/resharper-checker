@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Mono.Cecil;
 
-namespace ReSharper.Weaver.Tests {
+namespace JetBrains.ReSharper.Checker.Tests {
   public sealed class MockAssemblyResolver : IAssemblyResolver {
     private readonly string myDirectory;
 

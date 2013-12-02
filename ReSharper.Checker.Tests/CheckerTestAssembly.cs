@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using JetBrains.Annotations;
 using JetBrains.ReSharper.Checker;
 using Mono.Cecil;
 using Mono.Cecil.Pdb;
 using NUnit.Framework;
-using ReSharper.Weaver.Tests;
 
 // ReSharper disable once CheckNamespace
 
@@ -17,7 +17,7 @@ public sealed class CheckerTestAssembly {
 
   [SetUp] public static void SetUp() {
     var assembly = typeof(CheckerTestAssembly).Assembly;
-    var currentAssemblyPath = MockAssemblyResolver.FindPath(assembly);
+    var currentAssemblyPath = JetBrains.ReSharper.Checker.Tests.MockAssemblyResolver.FindPath(assembly);
     var testDirectory = Path.GetDirectoryName(currentAssemblyPath);
     if (testDirectory == null) return;
 
@@ -34,9 +34,9 @@ public sealed class CheckerTestAssembly {
 
     IAssemblyResolver assemblyResolver;
     if (testDataAssemblyPath.IndexOf("NoRef", StringComparison.OrdinalIgnoreCase) > -1) {
-      assemblyResolver = new DefaultAssemblyResolver();
+      assemblyResolver = new MockAssemblyResolver();
     } else {
-      assemblyResolver = new MockAssemblyResolver(outputDirectory);
+      assemblyResolver = new JetBrains.ReSharper.Checker.Tests.MockAssemblyResolver(outputDirectory);
     }
 
     var targetAssemblyPath = Path.ChangeExtension(testDataAssemblyPath, "weaved.dll");
@@ -68,7 +68,7 @@ public sealed class CheckerTestAssembly {
     return Assembly.LoadFile(targetAssemblyPath);
   }
 
-  public static object GetWeavedType<T>() {
+  public static object GetWeavedTypeFor<T>() {
     lock (Instances) {
       var originalType = typeof(T);
 
@@ -87,6 +87,32 @@ public sealed class CheckerTestAssembly {
 
       throw new ArgumentException(string.Format(
         "Type {0} is not found", originalType.FullName));
+    }
+  }
+
+  private sealed class MockAssemblyResolver : DefaultAssemblyResolver {
+    private bool IsTestData([NotNull] string name) {
+      return name.IndexOf("TestData", StringComparison.OrdinalIgnoreCase) > -1;
+    }
+
+    public override AssemblyDefinition Resolve(AssemblyNameReference name) {
+      if (IsTestData(name.FullName)) return null;
+      return base.Resolve(name);
+    }
+
+    public override AssemblyDefinition Resolve(string fullName) {
+      if (IsTestData(fullName)) return null;
+      return base.Resolve(fullName);
+    }
+
+    public override AssemblyDefinition Resolve(string fullName, ReaderParameters parameters) {
+      if (IsTestData(fullName)) return null;
+      return base.Resolve(fullName, parameters);
+    }
+
+    public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters) {
+      if (IsTestData(name.FullName)) return null;
+      return base.Resolve(name, parameters);
     }
   }
 }

@@ -1,12 +1,23 @@
 ﻿using System;
+using JetBrains.Annotations;
 using JetBrains.ReSharper.Checker.TestData;
+using JetBrains.ReSharper.Checker.TestDataNoRef;
+using JetBrains.ReSharper.Checker.TestDataRef;
 using NUnit.Framework;
 
 namespace JetBrains.ReSharper.Checker.Tests {
   [TestFixture]
   public sealed class IntegrationTests {
-    private dynamic SimpleClass {
-      get { return CheckerTestAssembly.GetWeavedType<SimpleClass>(); }
+    [NotNull] private dynamic SimpleClass {
+      get { return CheckerTestAssembly.GetWeavedTypeFor<SimpleClass>(); }
+    }
+
+    [NotNull] private dynamic DerivedClass {
+      get { return CheckerTestAssembly.GetWeavedTypeFor<DerivedClass>(); }
+    }
+
+    [NotNull] private dynamic DetachedDerivedClass {
+      get { return CheckerTestAssembly.GetWeavedTypeFor<DetachedDerivedClass>(); }
     }
 
     [Test] public void SingleArgument() {
@@ -89,6 +100,16 @@ namespace JetBrains.ReSharper.Checker.Tests {
       Assert.Throws<ArgumentNullException>(() => SimpleClass.MultipleImplMethod(null, "def"));
       Assert.Throws<ArgumentNullException>(() => SimpleClass.VirtualMethod2("abc", null));
       Assert.Throws<ArgumentNullException>(() => SimpleClass.VirtualMethod2(null, "def"));
+    }
+
+    [Test] public void NotNullFromReferenced() {
+      Assert.DoesNotThrow(() => DerivedClass.UsesReferencedNotNull("abc"));
+      Assert.Throws<ArgumentNullException>(() => DerivedClass.UsesReferencedNotNull(null));
+    }
+
+    [Test] public void NotNullFromUnresolved() {
+      Assert.DoesNotThrow(() => DetachedDerivedClass.UsesReferencedNotNull("abc"));
+      Assert.Throws<ArgumentNullException>(() => DetachedDerivedClass.UsesReferencedNotNull(null));
     }
   }
 }

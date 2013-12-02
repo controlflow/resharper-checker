@@ -26,7 +26,7 @@ namespace JetBrains.Annotations {
     AttributeTargets.Method | AttributeTargets.Parameter |
     AttributeTargets.Property | AttributeTargets.Delegate |
     AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
-  internal sealed class CanBeNullAttribute : Attribute {}
+  public sealed class CanBeNullAttribute : Attribute {}
 
   /// <summary>
   /// Indicates that the value of the marked element could never be <c>null</c>
@@ -40,7 +40,7 @@ namespace JetBrains.Annotations {
     AttributeTargets.Method | AttributeTargets.Parameter |
     AttributeTargets.Property | AttributeTargets.Delegate |
     AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
-  internal sealed class NotNullAttribute : Attribute { }
+  public sealed class NotNullAttribute : Attribute { }
 
   /// <summary>
   /// Describes dependency between method input and output
@@ -85,7 +85,7 @@ namespace JetBrains.Annotations {
   /// </code></item>
   /// </list></examples>
   [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-  internal sealed class ContractAnnotationAttribute : Attribute {
+  public sealed class ContractAnnotationAttribute : Attribute {
     public ContractAnnotationAttribute([NotNull] string contract)
       : this(contract, false) {}
 
@@ -104,7 +104,7 @@ namespace JetBrains.Annotations {
   /// will not be marked as unused (as well as by other usage inspections)
   /// </summary>
   [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
-  internal sealed class UsedImplicitlyAttribute : Attribute {
+  public sealed class UsedImplicitlyAttribute : Attribute {
     public UsedImplicitlyAttribute()
       : this(ImplicitUseKindFlags.Default, ImplicitUseTargetFlags.Default) {}
 
@@ -131,7 +131,7 @@ namespace JetBrains.Annotations {
   /// (as well as by other usage inspections)
   /// </summary>
   [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-  internal sealed class MeansImplicitUseAttribute : Attribute {
+  public sealed class MeansImplicitUseAttribute : Attribute {
     public MeansImplicitUseAttribute()
       : this(ImplicitUseKindFlags.Default, ImplicitUseTargetFlags.Default) {}
 
@@ -156,7 +156,7 @@ namespace JetBrains.Annotations {
   }
 
   [Flags]
-  internal enum ImplicitUseKindFlags {
+  public enum ImplicitUseKindFlags {
     Default = Access | Assign | InstantiatedWithFixedConstructorSignature,
 
     /// <summary>Only entity marked with attribute considered used</summary>
@@ -181,7 +181,7 @@ namespace JetBrains.Annotations {
   /// or <see cref="UsedImplicitlyAttribute"/>
   /// </summary>
   [Flags]
-  internal enum ImplicitUseTargetFlags {
+  public enum ImplicitUseTargetFlags {
     Default = Itself,
     Itself = 1,
 
@@ -200,7 +200,7 @@ namespace JetBrains.Annotations {
   /// while the method is executed
   /// </summary>
   [AttributeUsage(AttributeTargets.Parameter, Inherited = true)]
-  internal sealed class InstantHandleAttribute : Attribute {}
+  public sealed class InstantHandleAttribute : Attribute {}
 
   /// <summary>
   /// Indicates that a method does not make any observable state changes.
@@ -214,5 +214,5 @@ namespace JetBrains.Annotations {
   /// }
   /// </code></example>
   [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-  internal sealed class PureAttribute : Attribute {}
+  public sealed class PureAttribute : Attribute {}
 }

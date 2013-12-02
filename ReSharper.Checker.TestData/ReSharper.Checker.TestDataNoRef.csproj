@@ -40,5 +40,14 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DetachedDerivedClass.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ReSharper.Checker.TestData.csproj">
+      <Project>{4C422215-795E-4536-B7E7-C3ACE4F8CBA4}</Project>
+      <Name>ReSharper.Checker.TestData</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
