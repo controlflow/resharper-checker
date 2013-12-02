@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 using Mono.Cecil;
 
 namespace JetBrains.ReSharper.Checker {
-  public class ArgumentNullExceptionUtil {
+  public static class ArgumentNullExceptionUtil {
     [NotNull] private static readonly string StringTypeFqn = typeof(String).FullName;
 
     [CanBeNull] public static MethodReference FindConstructor([NotNull] ModuleDefinition module) {
