@@ -39,9 +39,9 @@ namespace JetBrains.ReSharper.Checker {
         // todo: check OnlyPublicTypes flag
 
         // collect [NotNull] fields, .initonly and not
-        foreach (var fieldDefinition in typeDefinition.Fields) {
-          
-        }
+        //foreach (var fieldDefinition in typeDefinition.Fields) {
+        //  
+        //}
 
         // if any
         // inspect ctors for delegating calls
@@ -133,7 +133,7 @@ namespace JetBrains.ReSharper.Checker {
         if (!positions.Contains(parameterDefinition.Index)) continue;
 
         var parameterType = parameterDefinition.ParameterType;
-        if (parameterDefinition.IsOut && parameterType.IsByReference) {
+        if (parameterType.IsByReference) {
           if (!ChecksEmitUtil.IsNullableType(parameterType)) {
             LogInfo(string.Format(
               "Invalid annotation usage in member {0} at parameter '{1}'.",
