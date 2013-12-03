@@ -105,6 +105,20 @@ namespace JetBrains.ReSharper.Checker.TestData
       return arg;
     }
 
+    public void ManyArgs(
+      [NotNull] string arg0, [NotNull] string arg1,
+      [NotNull] string arg2, [NotNull] string arg3,
+      [NotNull] string arg4, [NotNull] string arg5,
+      [NotNull] string arg6, [NotNull] string arg7,
+      [NotNull] string arg8, [NotNull] string arg9,
+      [NotNull] string arg10, [NotNull] string arg11,
+      [NotNull] string arg12, [NotNull] string arg13,
+      [NotNull] string arg14, [NotNull] string arg15,
+      [NotNull] string arg16, [NotNull] string arg17,
+      [NotNull] string arg18, [NotNull] string arg19) {
+      
+    }
+
     // todo: support annotations like this in R#
     public string Property1 { [NotNull] get; [param: NotNull] set; }
 

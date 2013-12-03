@@ -139,5 +139,10 @@ namespace JetBrains.ReSharper.Checker.Tests {
       Assert.DoesNotThrow(() => SimpleClass.PropertyInterface = null);
       Assert.Throws<ArgumentNullException>(() => GC.KeepAlive(SimpleClass.PropertyInterface));
     }
+
+    [Test] public void ManyArgs() {
+      Assert.DoesNotThrow(() => SimpleClass.ManyArgs("a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.ManyArgs("a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", null, "a"));
+    }
   }
 }
