@@ -43,11 +43,9 @@ namespace JetBrains.ReSharper.Checker
         case 1: return Instruction.Create(OpCodes.Ldarg_1);
         case 2: return Instruction.Create(OpCodes.Ldarg_2);
         case 3: return Instruction.Create(OpCodes.Ldarg_3);
-        default:
-          var opcode = OpCodes.Ldarg_S;
-          return (parameterIndex < 256)
-            ? Instruction.Create(opcode, parameter)
-            : Instruction.Create(OpCodes.Ldarg, parameter);
+        default: return (parameterIndex < 256)
+          ? Instruction.Create(OpCodes.Ldarg_S, parameter)
+          : Instruction.Create(OpCodes.Ldarg, parameter);
       }
     }
 

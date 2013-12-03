@@ -5,32 +5,60 @@ using Mono.Cecil;
 
 namespace JetBrains.ReSharper.Checker {
   public sealed class AttributeHelper {
-    [NotNull] private readonly Dictionary<ModuleDefinition, HashSet<MetadataToken>> myTokens;
+    [NotNull] private readonly Dictionary<ModuleDefinition, HashSet<MetadataToken>> myNotNullAttributeTypeTokens;
+    [NotNull] private readonly Dictionary<ModuleDefinition, Dictionary<MetadataToken, bool>> myNotNullFields;
     [NotNull] private static readonly string NotNullShortName = typeof(NotNullAttribute).Name;
     [NotNull] private static readonly string SysAttributeFqn = typeof(Attribute).FullName;
 
     private AttributeHelper() {
-      myTokens = new Dictionary<ModuleDefinition, HashSet<MetadataToken>>();
+      myNotNullAttributeTypeTokens = new Dictionary<ModuleDefinition, HashSet<MetadataToken>>();
+      myNotNullFields = new Dictionary<ModuleDefinition, Dictionary<MetadataToken, bool>>();
     }
 
     public bool AnyAttributesFound {
-      get { return myTokens.Count > 0; }
+      get { return myNotNullAttributeTypeTokens.Count > 0; }
     }
 
-    public bool IsNotNullAnnotated(
+    public bool IsNotNullAnnotated([NotNull] FieldReference field) {
+      Dictionary<MetadataToken, bool> moduleCache;
+      if (!myNotNullFields.TryGetValue(field.Module, out moduleCache)) {
+        myNotNullFields[field.Module] = moduleCache = new Dictionary<MetadataToken, bool>();
+      }
+
+      var token = field.MetadataToken;
+
+      bool annotated;
+      if (moduleCache.TryGetValue(token, out annotated)) return annotated;
+
+      var fieldDefinition = field.Resolve();
+      if (fieldDefinition != null && fieldDefinition.HasCustomAttributes) {
+        HashSet<MetadataToken> tokens;
+        if (!myNotNullAttributeTypeTokens.TryGetValue(field.Module, out tokens)) return false;
+
+        foreach (var attribute in fieldDefinition.CustomAttributes) {
+          var metadataToken = attribute.AttributeType.MetadataToken;
+          if (tokens.Contains(metadataToken)) { annotated = true; break; }
+        }
+      }
+
+      moduleCache[token] = annotated;
+      return annotated;
+    }
+
+    private static bool IsNotNullAnnotated(
       [NotNull] ICustomAttributeProvider provider, [NotNull] HashSet<MetadataToken> tokens) {
 
-      if (provider.HasCustomAttributes) {
-        foreach (var attribute in provider.CustomAttributes) {
-          var metadataToken = attribute.AttributeType.MetadataToken;
-          if (tokens.Contains(metadataToken)) return true;
-        }
+      if (!provider.HasCustomAttributes) return false;
+
+      foreach (var attribute in provider.CustomAttributes) {
+        var metadataToken = attribute.AttributeType.MetadataToken;
+        if (tokens.Contains(metadataToken)) return true;
       }
 
       return false;
     }
 
-    public static bool IsAttribute([NotNull] TypeReference reference) {
+    public static bool IsNotNullAttributeType([NotNull] TypeReference reference) {
       if (reference.Name != NotNullShortName) return false;
 
       if (reference.IsValueType)       return false;
@@ -58,14 +86,14 @@ namespace JetBrains.ReSharper.Checker {
       HashSet<MetadataToken> tokens = null;
 
       foreach (var reference in module.GetTypeReferences()) {
-        if (IsAttribute(reference)) {
+        if (IsNotNullAttributeType(reference)) {
           tokens = tokens ?? new HashSet<MetadataToken>();
           tokens.Add(reference.MetadataToken);
         }
       }
 
       foreach (var definition in module.GetTypes()) {
-        if (IsAttribute(definition)) {
+        if (IsNotNullAttributeType(definition)) {
           tokens = tokens ?? new HashSet<MetadataToken>();
           tokens.Add(definition.MetadataToken);
         }
@@ -74,14 +102,14 @@ namespace JetBrains.ReSharper.Checker {
       return tokens;
     }
 
-    [NotNull] public static AttributeHelper Create([NotNull] ModuleDefinition module) {
+    [NotNull] public static AttributeHelper CreateFrom([NotNull] ModuleDefinition module) {
       var attributes = new AttributeHelper();
 
       // current module
       {
         var tokens = InspectModule(module);
         if (tokens != null) {
-          attributes.myTokens[module] = tokens;
+          attributes.myNotNullAttributeTypeTokens[module] = tokens;
         }
       }
 
@@ -92,11 +120,11 @@ namespace JetBrains.ReSharper.Checker {
           if (assemblyDefinition == null) continue;
 
           foreach (var referencedModule in assemblyDefinition.Modules) {
-            if (attributes.myTokens.ContainsKey(referencedModule)) continue;
+            if (attributes.myNotNullAttributeTypeTokens.ContainsKey(referencedModule)) continue;
 
             var tokens = InspectModule(referencedModule);
             if (tokens != null) {
-              attributes.myTokens[referencedModule] = tokens;
+              attributes.myNotNullAttributeTypeTokens[referencedModule] = tokens;
             }
           }
         }
@@ -107,7 +135,7 @@ namespace JetBrains.ReSharper.Checker {
 
     public void CollectFrom([NotNull] MethodDefinition definition, [NotNull] HashSet<int> annotated) {
       HashSet<MetadataToken> tokens;
-      if (!myTokens.TryGetValue(definition.Module, out tokens)) return;
+      if (!myNotNullAttributeTypeTokens.TryGetValue(definition.Module, out tokens)) return;
 
       if (definition.HasParameters) {
         foreach (var parameter in definition.Parameters) {

@@ -116,7 +116,6 @@ namespace JetBrains.ReSharper.Checker.TestData
       [NotNull] string arg14, [NotNull] string arg15,
       [NotNull] string arg16, [NotNull] string arg17,
       [NotNull] string arg18, [NotNull] string arg19) {
-      
     }
 
     // todo: support annotations like this in R#
@@ -126,5 +125,27 @@ namespace JetBrains.ReSharper.Checker.TestData
 
     public override string PropertyVirtual { get; set; }
     public string PropertyInterface { get; set; }
+
+    class FieldAccessClass {
+      public FieldAccessClass(string field) {
+        ((dynamic)this).FieldToRead = field; // hack write check
+      }
+
+      // ReSharper disable once UnassignedReadonlyField.Compiler
+      // ReSharper disable once UnassignedField.Compiler
+      [NotNull] public string FieldToRead;
+      [NotNull] public string FieldToWrite;
+    }
+
+    public string FieldAccess(string arg) {
+      var cl = new FieldAccessClass(arg);
+      return cl.FieldToRead;
+    }
+
+    public void FieldWrite(string arg) {
+      // ReSharper disable once UseObjectOrCollectionInitializer
+      var cl = new FieldAccessClass("notnull");
+      cl.FieldToWrite = arg;
+    }
   }
 }

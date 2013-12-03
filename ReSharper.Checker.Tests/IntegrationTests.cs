@@ -141,8 +141,21 @@ namespace JetBrains.ReSharper.Checker.Tests {
     }
 
     [Test] public void ManyArgs() {
-      Assert.DoesNotThrow(() => SimpleClass.ManyArgs("a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"));
-      Assert.Throws<ArgumentNullException>(() => SimpleClass.ManyArgs("a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", null, "a"));
+      const string x = "a";
+      Assert.DoesNotThrow(() => SimpleClass.ManyArgs(
+        x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.ManyArgs(
+        x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, null, x));
+    }
+
+    [Test] public void FieldAccess() {
+      Assert.DoesNotThrow(() => SimpleClass.FieldAccess("abc"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.FieldAccess(null));
+    }
+
+    [Test] public void FieldWrite() {
+      Assert.DoesNotThrow(() => SimpleClass.FieldWrite("abc"));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.FieldWrite(null));
     }
   }
 }

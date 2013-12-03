@@ -21,12 +21,11 @@ namespace JetBrains.ReSharper.Checker {
     [NotNull] private AttributeHelper Attributes { get; set; }
     [NotNull] private MethodReference ArgumentNullCtor { get; set; }
 
-
     public void Execute() {
       LogInfo("DEBUG");
       LogInfo(Config.ToString());
 
-      Attributes = AttributeHelper.Create(ModuleDefinition);
+      Attributes = AttributeHelper.CreateFrom(ModuleDefinition);
       if (!Attributes.AnyAttributesFound) return;
 
       var argumentNullCtor = ArgumentNullExceptionUtil.FindConstructor(ModuleDefinition);
@@ -36,26 +35,9 @@ namespace JetBrains.ReSharper.Checker {
       var notNulls = new HashSet<int>();
 
       foreach (var typeDefinition in ModuleDefinition.GetTypes()) {
-        // todo: check OnlyPublicTypes flag
-
-        // collect [NotNull] fields, .initonly and not
-        //foreach (var fieldDefinition in typeDefinition.Fields) {
-        //  
-        //}
-
-        // if any
-        // inspect ctors for delegating calls
-        // if no such calls - emit checks at every ctor end
-        // if there is - emit read checks for some fielfs
-
-        // for all the write access - emit write checks
-
-        // todo: base fields read/write checks (always?)
-
+        
         foreach (var methodDefinition in typeDefinition.Methods) {
-          //if (methodDefinition.Name != "BuggyMethod") {
-          //  continue;
-          //}
+          
 
           if (methodDefinition.HasBody) {
             Attributes.CollectFrom(methodDefinition, notNulls);
@@ -64,6 +46,63 @@ namespace JetBrains.ReSharper.Checker {
               EmitMethodEnterChecks(methodDefinition, notNulls);
               EmitMethodExitChecks(methodDefinition, notNulls);
               notNulls.Clear();
+            }
+
+            var instructions = methodDefinition.Body.Instructions;
+            if (instructions.Count > 0) {
+
+              List<Instruction> xs = null;
+
+              for (var index = 0; index < instructions.Count; index++) {
+                var instruction = instructions[index];
+
+                switch (instruction.OpCode.Code) {
+                  // ld[s]flda?
+                  case Code.Ldfld:
+                  case Code.Ldsfld: {
+                    var fieldReference = (FieldReference) instruction.Operand;
+                    if (!Attributes.IsNotNullAnnotated(fieldReference)) {
+                      break;
+                    }
+
+                    if (!ChecksEmitUtil.IsNullableType(fieldReference.FieldType)) {
+                      break; // todo: emit warning
+                    }
+
+
+                    if (xs == null) {
+                      xs = new List<Instruction>(instructions.Count);
+                      for (var j = 0; j <= index; j++) xs.Add(instructions[j]);
+                    }
+
+                    xs.Add(Instruction.Create(OpCodes.Dup));
+
+                    
+                    var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
+                      null, fieldReference.FieldType, ArgumentNullCtor,
+                      instructions[index + 1], fieldReference.Name,
+                      "Field [NotNull] requirement violation");
+
+                    foreach (var i in checkInstructions) xs.Add(i);
+                    continue; // yes
+                  }
+
+                  case Code.Stfld:
+                  case Code.Stsfld: {
+
+                    break;
+                  }
+                }
+
+                if (xs != null) {
+                  xs.Add(instruction);
+                }
+              }
+
+              if (xs != null) {
+                instructions.Clear();
+                foreach (var x in xs) instructions.Add(x);
+              }
             }
           }
         }
