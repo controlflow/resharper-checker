@@ -124,10 +124,10 @@ namespace JetBrains.ReSharper.Checker {
         }
       }
 
-      if (definition.IsVirtual) {
-        var declaringType = definition.DeclaringType;
-        if (declaringType == null) return; // may be global method, yeah
+      var declaringType = definition.DeclaringType;
+      if (declaringType == null) return; // may be global method, yeah
 
+      if (definition.IsVirtual) {
         if (!definition.IsNewSlot) { // do not look for overriden methods
           var baseReference = declaringType.BaseType;
           if (baseReference != null) {
@@ -156,6 +156,25 @@ namespace JetBrains.ReSharper.Checker {
 
             CollectFrom(interfaceMethod, annotated);
           }
+        }
+      }
+
+      // todo: test inherited props
+
+      // inherit annotation from property metadata
+      if (definition.IsGetter) {
+        foreach (var propertyDefinition in declaringType.Properties) {
+          if (propertyDefinition.GetMethod != definition) continue;
+          if (IsNotNullAnnotated(propertyDefinition, tokens))
+            annotated.Add(-1); // return value
+          break;
+        }
+      } else if (definition.IsSetter) {
+        foreach (var propertyDefinition in declaringType.Properties) {
+          if (propertyDefinition.SetMethod != definition) continue;
+          if (IsNotNullAnnotated(propertyDefinition, tokens) && definition.Parameters.Count == 1)
+            annotated.Add(definition.Parameters[0].Index);
+          break;
         }
       }
     }

@@ -111,5 +111,33 @@ namespace JetBrains.ReSharper.Checker.Tests {
       Assert.DoesNotThrow(() => DetachedDerivedClass.UsesReferencedNotNull("abc"));
       Assert.Throws<ArgumentNullException>(() => DetachedDerivedClass.UsesReferencedNotNull(null));
     }
+
+    [Test] public void PropertyAccessors() {
+      Assert.Throws<ArgumentNullException>(() => GC.KeepAlive(SimpleClass.Property1));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.Property1 = null);
+      Assert.DoesNotThrow(() => SimpleClass.Property1 = "abc");
+      Assert.DoesNotThrow(() => GC.KeepAlive(SimpleClass.Property1));
+    }
+
+    [Test] public void PropertyAnnotation() {
+      Assert.Throws<ArgumentNullException>(() => GC.KeepAlive(SimpleClass.Property2));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.Property2 = null);
+      Assert.DoesNotThrow(() => SimpleClass.Property2 = "abc");
+      Assert.DoesNotThrow(() => GC.KeepAlive(SimpleClass.Property2));
+    }
+
+    [Test] public void PropertyVirtual() {
+      Assert.Throws<ArgumentNullException>(() => GC.KeepAlive(SimpleClass.PropertyVirtual));
+      Assert.Throws<ArgumentNullException>(() => SimpleClass.PropertyVirtual = null);
+      Assert.DoesNotThrow(() => SimpleClass.PropertyVirtual = "abc");
+      Assert.DoesNotThrow(() => GC.KeepAlive(SimpleClass.PropertyVirtual));
+    }
+
+    [Test] public void PropertyInterface() {
+      Assert.DoesNotThrow(() => SimpleClass.PropertyInterface = "abc");
+      Assert.DoesNotThrow(() => GC.KeepAlive(SimpleClass.PropertyInterface));
+      Assert.DoesNotThrow(() => SimpleClass.PropertyInterface = null);
+      Assert.Throws<ArgumentNullException>(() => GC.KeepAlive(SimpleClass.PropertyInterface));
+    }
   }
 }

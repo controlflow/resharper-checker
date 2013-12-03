@@ -63,6 +63,7 @@ namespace JetBrains.ReSharper.Checker.TestData
       var cache = new Dictionary<int, string>();
       if (!cache.TryGetValue(42, out value)) {
         // ReSharper disable once AssignNullToNotNullAttribute
+        // ReSharper disable once RedundantAssignment
         value = null;
       }
 
@@ -103,5 +104,13 @@ namespace JetBrains.ReSharper.Checker.TestData
     public override string VirtualMethod2(string arg, string arg2) {
       return arg;
     }
+
+    // todo: support annotations like this in R#
+    public string Property1 { [NotNull] get; [param: NotNull] set; }
+
+    [NotNull] public string Property2 { get; set; }
+
+    public override string PropertyVirtual { get; set; }
+    public string PropertyInterface { get; set; }
   }
 }

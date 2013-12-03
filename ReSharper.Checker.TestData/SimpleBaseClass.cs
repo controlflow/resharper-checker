@@ -11,5 +11,7 @@ namespace JetBrains.ReSharper.Checker.TestData {
     [NotNull] public virtual string VirtualMethod2(string arg, string arg2) {
       return arg;
     }
+
+    [NotNull] public abstract string PropertyVirtual { get; set; }
   }
 }

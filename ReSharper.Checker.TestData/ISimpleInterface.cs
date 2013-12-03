@@ -8,6 +8,8 @@ namespace JetBrains.ReSharper.Checker.TestData {
 
   public interface IEvenMoreSimpleInterface {
     [NotNull] string MultipleImplMethod(string arg1, string arg2);
+
+    [NotNull] string PropertyInterface { get; }
   }
 
   public interface IOtherInterface {

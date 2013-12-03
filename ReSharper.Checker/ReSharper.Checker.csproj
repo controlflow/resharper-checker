@@ -62,6 +62,9 @@
     <Compile Include="Utils\XmlDocUtil.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Readme.md">
+      <Link>Readme.md</Link>
+    </None>
     <None Include="NuGet\install.ps1" />
     <None Include="NuGet\uninstall.ps1" />
     <None Include="NuGet\ReSharper.Checker.nuspec" />
