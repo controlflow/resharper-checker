@@ -37,7 +37,20 @@ namespace JetBrains.ReSharper.Checker {
 
       foreach (var typeDefinition in ModuleDefinition.GetTypes()) {
         // todo: check OnlyPublicTypes flag
-        
+
+        // collect [NotNull] fields, .initonly and not
+        foreach (var fieldDefinition in typeDefinition.Fields) {
+          
+        }
+
+        // if any
+        // inspect ctors for delegating calls
+        // if no such calls - emit checks at every ctor end
+        // if there is - emit read checks for some fielfs
+
+        // for all the write access - emit write checks
+
+        // todo: base fields read/write checks (always?)
 
         foreach (var methodDefinition in typeDefinition.Methods) {
           //if (methodDefinition.Name != "BuggyMethod") {
@@ -47,6 +60,7 @@ namespace JetBrains.ReSharper.Checker {
           if (methodDefinition.HasBody) {
             Attributes.CollectFrom(methodDefinition, notNulls);
             if (notNulls.Count > 0) {
+              // todo: ability to turn on/off
               EmitMethodEnterChecks(methodDefinition, notNulls);
               EmitMethodExitChecks(methodDefinition, notNulls);
               notNulls.Clear();
