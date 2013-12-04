@@ -54,7 +54,7 @@ namespace JetBrains.ReSharper.Checker {
       }
     }
 
-    private void EmitFieldChecks(MethodDefinition methodDefinition) {
+    private void EmitFieldChecks([NotNull] MethodDefinition methodDefinition) {
       var methodBody = methodDefinition.Body;
       if (methodBody == null) return;
 
@@ -91,15 +91,12 @@ namespace JetBrains.ReSharper.Checker {
             var readAccess = (opCode == OpCodes.Ldfld || opCode == OpCodes.Ldsfld);
             if (readAccess) modifiedBody.Add(instruction); // ldfld
 
-            var message = readAccess
-              ? "Field [NotNull] requirement violation"
-              : "Field [NotNull] ensures violation";
-
             modifiedBody.Add(Instruction.Create(OpCodes.Dup));
 
+            var nextInstruction = instructions[index + 1];
             var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
               null, fieldReference.FieldType, ArgumentNullCtor,
-              instructions[index + 1], fieldReference.Name, message);
+              nextInstruction, fieldReference.Name, "Field [NotNull] contract violation");
 
             foreach (var instr in checkInstructions) modifiedBody.Add(instr);
 
@@ -148,7 +145,7 @@ namespace JetBrains.ReSharper.Checker {
 
         var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
           parameterDefinition, parameterType, ArgumentNullCtor, firstInstruction,
-          parameterDefinition.Name, "[NotNull] requirement violation");
+          parameterDefinition.Name, "Input parameter [NotNull] contract violation");
 
         inputСhecks.Push(checkInstructions);
         firstInstruction = checkInstructions[0];
@@ -194,7 +191,7 @@ namespace JetBrains.ReSharper.Checker {
 
           var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
             parameterDefinition, parameterType, ArgumentNullCtor, target,
-            parameterDefinition.Name, "[NotNull] ensures violation");
+            parameterDefinition.Name, "Output parameter [NotNull] contract violation");
 
           outputChecks.Enqueue(checkInstructions);
         }
@@ -216,7 +213,8 @@ namespace JetBrains.ReSharper.Checker {
           checkReturnValue = true;
         } else {
           LogInfo(string.Format(
-            "Invalid annotation usage in member {0} at return value.", methodDefinition.GetXmlDocId()));
+            "Invalid annotation usage in member {0} at return value.",
+            methodDefinition.GetXmlDocId()));
         }
       }
 

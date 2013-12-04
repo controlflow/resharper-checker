@@ -1,5 +1,0 @@
-﻿
-
-
-* annotations example file
-* ability to erase annotations?
