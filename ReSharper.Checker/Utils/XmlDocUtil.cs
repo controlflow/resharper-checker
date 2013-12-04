@@ -6,6 +6,19 @@ using Mono.Cecil;
 namespace JetBrains.ReSharper.Checker {
   public static class XmlDocUtil {
     [NotNull] public static string GetXmlDocId(
+      [NotNull] this FieldReference fieldReference, bool shortNameOnly = false) {
+      var builder = new StringBuilder();
+
+      if (!shortNameOnly) {
+        var ownerName = fieldReference.DeclaringType.FullName;
+        builder.Append("F:").Append(ownerName)
+               .Replace('+', '.').Append('.');
+      }
+
+      return builder.Append(fieldReference.Name).ToString();
+    }
+
+    [NotNull] public static string GetXmlDocId(
       [NotNull] this MethodReference methodReference, bool shortNameOnly = false) {
 
       var builder = new StringBuilder();

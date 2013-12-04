@@ -48,64 +48,73 @@ namespace JetBrains.ReSharper.Checker {
               notNulls.Clear();
             }
 
-            var instructions = methodDefinition.Body.Instructions;
-            if (instructions.Count > 0) {
-
-              List<Instruction> xs = null;
-
-              for (var index = 0; index < instructions.Count; index++) {
-                var instruction = instructions[index];
-
-                switch (instruction.OpCode.Code) {
-                  // ld[s]flda?
-                  case Code.Ldfld:
-                  case Code.Ldsfld: {
-                    var fieldReference = (FieldReference) instruction.Operand;
-                    if (!Attributes.IsNotNullAnnotated(fieldReference)) {
-                      break;
-                    }
-
-                    if (!ChecksEmitUtil.IsNullableType(fieldReference.FieldType)) {
-                      break; // todo: emit warning
-                    }
-
-
-                    if (xs == null) {
-                      xs = new List<Instruction>(instructions.Count);
-                      for (var j = 0; j <= index; j++) xs.Add(instructions[j]);
-                    }
-
-                    xs.Add(Instruction.Create(OpCodes.Dup));
-
-                    
-                    var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
-                      null, fieldReference.FieldType, ArgumentNullCtor,
-                      instructions[index + 1], fieldReference.Name,
-                      "Field [NotNull] requirement violation");
-
-                    foreach (var i in checkInstructions) xs.Add(i);
-                    continue; // yes
-                  }
-
-                  case Code.Stfld:
-                  case Code.Stsfld: {
-
-                    break;
-                  }
-                }
-
-                if (xs != null) {
-                  xs.Add(instruction);
-                }
-              }
-
-              if (xs != null) {
-                instructions.Clear();
-                foreach (var x in xs) instructions.Add(x);
-              }
-            }
+            EmitFieldChecks(methodDefinition);
           }
         }
+      }
+    }
+
+    private void EmitFieldChecks(MethodDefinition methodDefinition) {
+      var methodBody = methodDefinition.Body;
+      if (methodBody == null) return;
+
+      var instructions = methodBody.Instructions;
+      if (instructions.Count == 0) return;
+
+      List<Instruction> modifiedBody = null;
+      for (var index = 0; index < instructions.Count; index++) {
+        var instruction = instructions[index];
+        var opCode = instruction.OpCode;
+
+        switch (opCode.Code) {
+          case Code.Ldfld:
+          case Code.Stfld:
+          case Code.Ldsfld:
+          case Code.Stsfld: {
+            var fieldReference = instruction.Operand as FieldReference;
+            if (fieldReference == null) break;
+
+            if (!Attributes.IsNotNullAnnotated(fieldReference)) break;
+            if (!ChecksEmitUtil.IsNullableType(fieldReference.FieldType)) {
+              LogInfo(string.Format(
+                "Invalid annotation usage at field {0}.", fieldReference.GetXmlDocId()));
+              break;
+            }
+
+            if (modifiedBody == null) {
+              modifiedBody = new List<Instruction>(instructions.Count);
+              for (var index2 = 0; index2 < index; index2++) {
+                modifiedBody.Add(instructions[index2]);
+              }
+            }
+
+            var readAccess = (opCode == OpCodes.Ldfld || opCode == OpCodes.Ldsfld);
+            if (readAccess) modifiedBody.Add(instruction); // ldfld
+
+            var message = readAccess
+              ? "Field [NotNull] requirement violation"
+              : "Field [NotNull] ensures violation";
+
+            modifiedBody.Add(Instruction.Create(OpCodes.Dup));
+
+            var checkInstructions = ChecksEmitUtil.EmitNullCheckInstructions(
+              null, fieldReference.FieldType, ArgumentNullCtor,
+              instructions[index + 1], fieldReference.Name, message);
+
+            foreach (var instr in checkInstructions) modifiedBody.Add(instr);
+
+            if (!readAccess) modifiedBody.Add(instruction); // stfld
+
+            continue; // yes, we handled
+          }
+        }
+
+        if (modifiedBody != null) modifiedBody.Add(instruction);
+      }
+
+      if (modifiedBody != null) {
+        instructions.Clear();
+        foreach (var x in modifiedBody) instructions.Add(x);
       }
     }
 
