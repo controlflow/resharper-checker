@@ -28,7 +28,7 @@ namespace JetBrains.ReSharper.Checker {
       Attributes = AttributeHelper.CreateFrom(ModuleDefinition);
       if (!Attributes.AnyAttributesFound) return;
 
-      var argumentNullCtor = ArgumentNullExceptionUtil.FindConstructor(ModuleDefinition);
+      var argumentNullCtor = ArgumentNullExceptionUtil.FindAneConstructor(ModuleDefinition);
       if (argumentNullCtor == null) return;
 
       ArgumentNullCtor = argumentNullCtor;
@@ -40,6 +40,7 @@ namespace JetBrains.ReSharper.Checker {
           
 
           if (methodDefinition.HasBody) {
+
             Attributes.CollectFrom(methodDefinition, notNulls);
             if (notNulls.Count > 0) {
               // todo: ability to turn on/off
@@ -49,11 +50,13 @@ namespace JetBrains.ReSharper.Checker {
             }
 
             EmitFieldChecks(methodDefinition);
+            EmitInstantHandleChecks(methodDefinition);
           }
         }
       }
     }
 
+    // todo: what about checks field for null?
     private void EmitFieldChecks([NotNull] MethodDefinition methodDefinition) {
       var methodBody = methodDefinition.Body;
       if (methodBody == null) return;
@@ -218,7 +221,6 @@ namespace JetBrains.ReSharper.Checker {
         }
       }
 
-
       if (outputChecks.Count == 0) return;
 
       var instructions = methodDefinition.Body.Instructions;
@@ -232,6 +234,13 @@ namespace JetBrains.ReSharper.Checker {
         instructions.Add(instruction);
 
       instructions.Add(lastInstruction);
+    }
+
+    private void EmitInstantHandleChecks(
+      [NotNull] MethodDefinition methodDefinition) {
+      
+
+      
     }
   }
 }

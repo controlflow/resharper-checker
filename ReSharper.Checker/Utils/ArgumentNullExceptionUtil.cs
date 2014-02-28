@@ -6,7 +6,7 @@ namespace JetBrains.ReSharper.Checker {
   public static class ArgumentNullExceptionUtil {
     [NotNull] private static readonly string StringTypeFqn = typeof(String).FullName;
 
-    [CanBeNull] public static MethodReference FindConstructor([NotNull] ModuleDefinition module) {
+    [CanBeNull] public static MethodReference FindAneConstructor([NotNull] ModuleDefinition module) {
       // todo: review how this thing works
       var typeReference = module.Import(typeof(ArgumentNullException));
       if (typeReference == null) return null;

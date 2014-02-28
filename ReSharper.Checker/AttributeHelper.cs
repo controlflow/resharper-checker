@@ -6,17 +6,21 @@ using Mono.Cecil;
 namespace JetBrains.ReSharper.Checker {
   public sealed class AttributeHelper {
     [NotNull] private readonly Dictionary<ModuleDefinition, HashSet<MetadataToken>> myNotNullAttributeTypeTokens;
+    [NotNull] private readonly Dictionary<ModuleDefinition, HashSet<MetadataToken>> myInstantHandleAttributeTypeTokens;
     [NotNull] private readonly Dictionary<ModuleDefinition, Dictionary<MetadataToken, bool>> myNotNullFields;
-    [NotNull] private static readonly string NotNullShortName = typeof(NotNullAttribute).Name;
     [NotNull] private static readonly string SysAttributeFqn = typeof(Attribute).FullName;
 
     private AttributeHelper() {
       myNotNullAttributeTypeTokens = new Dictionary<ModuleDefinition, HashSet<MetadataToken>>();
+      myInstantHandleAttributeTypeTokens = new Dictionary<ModuleDefinition, HashSet<MetadataToken>>();
       myNotNullFields = new Dictionary<ModuleDefinition, Dictionary<MetadataToken, bool>>();
     }
 
     public bool AnyAttributesFound {
-      get { return myNotNullAttributeTypeTokens.Count > 0; }
+      get {
+        return myNotNullAttributeTypeTokens.Count > 0
+            || myInstantHandleAttributeTypeTokens.Count > 0;
+      }
     }
 
     public bool IsNotNullAnnotated([NotNull] FieldReference field) {
@@ -59,41 +63,51 @@ namespace JetBrains.ReSharper.Checker {
     }
 
     public static bool IsNotNullAttributeType([NotNull] TypeReference reference) {
-      if (reference.Name != NotNullShortName) return false;
+      return IsSimpleAttribute(reference, typeof(NotNullAttribute).Name);
+    }
 
-      if (reference.IsValueType)       return false;
-      if (reference.IsArray)           return false;
+    public static bool IsInstanceHandleAttributeType([NotNull] TypeReference reference) {
+      return IsSimpleAttribute(reference, typeof(InstantHandleAttribute).Name);
+    }
+
+    private static bool IsSimpleAttribute([NotNull] TypeReference reference, [NotNull] string fqnName) {
+      if (reference.Name != fqnName) return false;
+
+      if (reference.IsValueType) return false;
+      if (reference.IsArray) return false;
       if (reference.IsGenericInstance) return false;
-      if (reference.IsPointer)         return false;
-      if (reference.IsNested)          return false;
-      if (reference.IsByReference)     return false;
+      if (reference.IsPointer) return false;
+      if (reference.IsNested) return false;
+      if (reference.IsByReference) return false;
 
       var definition = reference.Resolve();
-      if (definition != null) {
+      if (definition != null)
+      {
         if (definition.HasGenericParameters) return false;
-        if (definition.IsAbstract)           return false;
-        if (!definition.IsClass)             return false;
+        if (definition.IsAbstract) return false;
+        if (!definition.IsClass) return false;
 
         var baseReference = definition.BaseType;
-        if (baseReference == null)                     return false;
+        if (baseReference == null) return false;
         if (baseReference.FullName != SysAttributeFqn) return false;
       }
 
       return true;
     }
 
-    [CanBeNull] private static HashSet<MetadataToken> InspectModule([NotNull] ModuleDefinition module) {
+    [CanBeNull] private static HashSet<MetadataToken> FindTypeTokens(
+      [NotNull] ModuleDefinition module, [NotNull, InstantHandle] Predicate<TypeReference> predicate) {
       HashSet<MetadataToken> tokens = null;
 
       foreach (var reference in module.GetTypeReferences()) {
-        if (IsNotNullAttributeType(reference)) {
+        if (predicate(reference)) {
           tokens = tokens ?? new HashSet<MetadataToken>();
           tokens.Add(reference.MetadataToken);
         }
       }
 
       foreach (var definition in module.GetTypes()) {
-        if (IsNotNullAttributeType(definition)) {
+        if (predicate(definition)) {
           tokens = tokens ?? new HashSet<MetadataToken>();
           tokens.Add(definition.MetadataToken);
         }
@@ -107,10 +121,13 @@ namespace JetBrains.ReSharper.Checker {
 
       // current module
       {
-        var tokens = InspectModule(module);
-        if (tokens != null) {
-          attributes.myNotNullAttributeTypeTokens[module] = tokens;
-        }
+        var notNullTokens = FindTypeTokens(module, IsNotNullAttributeType);
+        if (notNullTokens != null)
+          attributes.myNotNullAttributeTypeTokens[module] = notNullTokens;
+
+        var instantHandleTokens = FindTypeTokens(module, IsInstanceHandleAttributeType);
+        if (instantHandleTokens != null)
+          attributes.myInstantHandleAttributeTypeTokens[module] = instantHandleTokens;
       }
 
       // and all the referenced modules
@@ -120,11 +137,16 @@ namespace JetBrains.ReSharper.Checker {
           if (assemblyDefinition == null) continue;
 
           foreach (var referencedModule in assemblyDefinition.Modules) {
-            if (attributes.myNotNullAttributeTypeTokens.ContainsKey(referencedModule)) continue;
+            if (!attributes.myNotNullAttributeTypeTokens.ContainsKey(referencedModule)) {
+              var notNullTokens = FindTypeTokens(referencedModule, IsNotNullAttributeType);
+              if (notNullTokens != null)
+                attributes.myNotNullAttributeTypeTokens[referencedModule] = notNullTokens;
+            }
 
-            var tokens = InspectModule(referencedModule);
-            if (tokens != null) {
-              attributes.myNotNullAttributeTypeTokens[referencedModule] = tokens;
+            if (!attributes.myInstantHandleAttributeTypeTokens.ContainsKey(referencedModule)) {
+              var instantHandleTokens = FindTypeTokens(referencedModule, IsInstanceHandleAttributeType);
+              if (instantHandleTokens != null)
+                attributes.myInstantHandleAttributeTypeTokens[referencedModule] = instantHandleTokens;
             }
           }
         }
